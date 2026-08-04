@@ -1,108 +1,79 @@
-import { CONFIG } from "../config.js";
-import { callClaude } from "./claude.js";
+// Extracción de texto 100% local: PDF (pdfjs-dist), Word (mammoth), texto plano.
+// Nada de IA ni servicios externos: si no se puede extraer texto, se marca noText.
+// pdfjs-dist y mammoth se cargan con import() dinámico para no inflar el bundle
+// inicial con librerías que solo hacen falta cuando subís ese tipo de archivo.
 
-// ── PDF (pdfjs) ────────────────────────────────────────────────
-async function pdfToText(file) {
-  const pdfjs = await import("pdfjs-dist");
-  const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
-  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+const TEXT_EXTENSIONS = ["txt", "md", "csv"];
 
-  const buf = await file.arrayBuffer();
-  const pdf = await pdfjs.getDocument({ data: buf }).promise;
-  let out = "";
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const line = content.items.map((it) => it.str).join(" ");
-    out += line + "\n";
-  }
-  return out.trim();
+function getExt(filename) {
+  const parts = filename.split(".");
+  return parts.length > 1 ? parts.pop().toLowerCase() : "";
 }
 
-// ── base64 helper ──────────────────────────────────────────────
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result).split(",")[1]);
-    r.onerror = () => reject(new Error("No se pudo leer el archivo."));
-    r.readAsDataURL(file);
-  });
+export function detectType(file) {
+  const ext = getExt(file.name);
+  if (ext === "pdf" || file.type === "application/pdf") return "pdf";
+  if (
+    ext === "docx" ||
+    file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  )
+    return "docx";
+  if (ext === "doc" || file.type === "application/msword") return "doc";
+  if (TEXT_EXTENSIONS.includes(ext) || file.type.startsWith("text/")) return ext || "txt";
+  if (file.type.startsWith("image/")) return "imagen";
+  return ext || "archivo";
 }
 
-// ── Claude lee PDF/imagen directo (sirve para escaneados) ──────
-async function claudeExtract(file, mediaType, blockType) {
-  const data = await fileToBase64(file);
-  const source =
-    blockType === "document"
-      ? { type: "base64", media_type: mediaType, data }
-      : { type: "base64", media_type: mediaType, data };
-  return callClaude({
-    system:
-      "Sos un transcriptor. Extraé TODO el texto del documento/imagen tal cual, respetando títulos, listas y orden. No resumas ni interpretes. Si hay tablas, pasalas a texto legible.",
-    content: [
-      { type: blockType, source },
-      { type: "text", text: "Transcribí todo el contenido a texto plano." },
-    ],
-    maxTokens: CONFIG.maxTokens.extract,
-  });
-}
-
-async function docxToText(file) {
-  const mammoth = (await import("mammoth/mammoth.browser.js")).default;
-  const arrayBuffer = await file.arrayBuffer();
-  const { value } = await mammoth.extractRawText({ arrayBuffer });
-  return (value || "").trim();
-}
-
-const IMG_TYPES = {
-  "image/png": "image/png",
-  "image/jpeg": "image/jpeg",
-  "image/jpg": "image/jpeg",
-  "image/webp": "image/webp",
-  "image/gif": "image/gif",
-};
-
-/**
- * Devuelve { text, method } a partir de un File.
- * method describe cómo se extrajo (útil para avisar al usuario).
- */
-export async function ingestFile(file) {
-  const name = file.name.toLowerCase();
-  const type = file.type;
-
-  // Texto plano
-  if (type.startsWith("text/") || name.endsWith(".txt") || name.endsWith(".md") || name.endsWith(".csv")) {
-    const text = (await file.text()).trim();
-    return { text, method: "texto" };
-  }
-
-  // Imagen → visión de Claude
-  if (IMG_TYPES[type] || /\.(png|jpe?g|webp|gif)$/.test(name)) {
-    const media = IMG_TYPES[type] || "image/png";
-    const text = await claudeExtract(file, media, "image");
-    return { text, method: "imagen (transcrita por IA)" };
-  }
-
-  // Word
-  if (name.endsWith(".docx") || type.includes("wordprocessingml")) {
-    const text = await docxToText(file);
-    return { text, method: "word" };
-  }
-
-  // PDF: probamos texto local; si viene vacío/escaneado, lo lee Claude
-  if (name.endsWith(".pdf") || type === "application/pdf") {
+async function extractPdf(file) {
+  try {
+    const [pdfjsLib, { default: pdfjsWorker }] = await Promise.all([
+      import("pdfjs-dist"),
+      import("pdfjs-dist/build/pdf.worker.mjs?url"),
+    ]);
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+    const buffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
     let text = "";
-    try {
-      text = await pdfToText(file);
-    } catch {
-      text = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map((item) => item.str).join(" ");
+      text += pageText + "\n\n";
     }
-    if (text.replace(/\s/g, "").length > 40) {
-      return { text, method: "pdf (texto)" };
-    }
-    const t = await claudeExtract(file, "application/pdf", "document");
-    return { text: t, method: "pdf escaneado (transcrito por IA)" };
+    text = text.trim();
+    return { text, noText: text.length === 0 };
+  } catch (err) {
+    return { text: "", noText: true };
   }
+}
 
-  throw new Error(`Formato no soportado: ${file.name}. Probá PDF, Word, imagen o texto.`);
+async function extractDocx(file) {
+  try {
+    const mammoth = await import("mammoth");
+    const buffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+    const text = (result.value || "").trim();
+    return { text, noText: text.length === 0 };
+  } catch (err) {
+    return { text: "", noText: true };
+  }
+}
+
+async function extractPlain(file) {
+  try {
+    const text = (await file.text()).trim();
+    return { text, noText: text.length === 0 };
+  } catch (err) {
+    return { text: "", noText: true };
+  }
+}
+
+// Devuelve { type, text, noText }. Si no se puede extraer nada (PDF escaneado,
+// imagen, .doc viejo), noText queda en true y el texto se puede completar a mano.
+export async function extractText(file) {
+  const type = detectType(file);
+  if (type === "pdf") return { type, ...(await extractPdf(file)) };
+  if (type === "docx") return { type, ...(await extractDocx(file)) };
+  if (TEXT_EXTENSIONS.includes(type)) return { type, ...(await extractPlain(file)) };
+  return { type, text: "", noText: true };
 }

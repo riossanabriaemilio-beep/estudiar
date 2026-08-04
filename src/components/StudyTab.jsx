@@ -1,242 +1,198 @@
-import { useEffect, useState } from "react";
-import { Plus, Brain, Network, MessageCircle, Sparkles, ChevronLeft, Send } from "lucide-react";
-import { db } from "../lib/db.js";
-import { buildContext, generateQuiz, generateMindMap, chatAboutMaterial } from "../lib/ai.js";
-import { Btn, Card, Badge, Empty, Spinner } from "./ui.jsx";
-import QuizRunner from "./QuizRunner.jsx";
-import MindMap from "./MindMap.jsx";
+import { useMemo, useState } from "react";
+import { BookOpen, Plus, Trash2 } from "lucide-react";
+import * as db from "../lib/db.js";
+import { ESTADO_DEFAULT, ESTADOS } from "../config.js";
+import { Button, ConfirmDialog, EmptyState, Field, Input, Modal } from "./ui.jsx";
 
-const STATUS = {
-  pendiente: { tone: "muted", label: "pendiente" },
-  repasar: { tone: "oro", label: "para repasar" },
-  dominado: { tone: "ok", label: "dominado" },
+const LUCES = [
+  { key: "sin_ver", tone: "sinver" },
+  { key: "repasar", tone: "repasar" },
+  { key: "dominado", tone: "ok" },
+];
+
+const DOT_COLOR = {
+  sinver: "bg-sinver",
+  repasar: "bg-repasar",
+  ok: "bg-ok",
 };
 
-export default function StudyTab({ subjectId, subjectName }) {
-  const [topics, setTopics] = useState([]);
-  const [materials, setMaterials] = useState([]);
-  const [notes, setNotes] = useState([]);
-  const [adding, setAdding] = useState(false);
-  const [draft, setDraft] = useState({ name: "", parcial: 1 });
-  const [active, setActive] = useState(null); // topic
-  const [mode, setMode] = useState("menu");   // menu|quiz|map
-  const [loading, setLoading] = useState("");
-  const [error, setError] = useState("");
-  const [quiz, setQuiz] = useState(null);
-  const [map, setMap] = useState(null);
+function Semaforo({ estado, onChange }) {
+  return (
+    <div className="flex items-center gap-1.5" role="group" aria-label="Estado de estudio">
+      {LUCES.map((luz) => {
+        const active = estado === luz.key;
+        const info = ESTADOS[luz.key];
+        return (
+          <button
+            key={luz.key}
+            type="button"
+            title={info.label}
+            aria-label={info.label}
+            aria-pressed={active}
+            onClick={() => onChange(luz.key)}
+            className={`h-6 w-6 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tinta focus-visible:ring-offset-1 ${
+              DOT_COLOR[luz.tone]
+            } ${active ? "scale-110 ring-2 ring-offset-2 ring-ink/70" : "opacity-30 hover:opacity-60"}`}
+          />
+        );
+      })}
+    </div>
+  );
+}
 
-  useEffect(() => {
-    db.getTopics(subjectId).then(setTopics);
-    db.getMaterials(subjectId).then(setMaterials);
-    db.getNotes(subjectId).then(setNotes);
-    setActive(null); setMode("menu"); setQuiz(null); setMap(null);
-  }, [subjectId]);
+function NewTemaModal({ open, onClose, subjectId, defaultParcial, onCreated }) {
+  const [name, setName] = useState("");
+  const [parcial, setParcial] = useState(defaultParcial);
+  const [saving, setSaving] = useState(false);
 
-  const hasMaterial = materials.length > 0 || notes.length > 0;
-
-  function ctxFor(topic) {
-    const chunks = [
-      topic ? `TEMA A ESTUDIAR: ${topic.name}` : "",
-      ...materials.map((m) => m.text),
-      ...notes.map((n) => `Apunte ${n.date}${n.title ? " · " + n.title : ""}:\n${n.content}`),
-    ];
-    return buildContext(chunks);
+  async function handleSave() {
+    if (!name.trim()) return;
+    setSaving(true);
+    await db.temas.add({
+      subjectId,
+      name: name.trim(),
+      parcial: Number(parcial) || 1,
+      estado: ESTADO_DEFAULT,
+    });
+    setSaving(false);
+    setName("");
+    onCreated();
+    onClose();
   }
-
-  async function saveTopics(list) { setTopics(list); await db.saveTopics(subjectId, list); }
-
-  function addTopic() {
-    if (!draft.name.trim()) return;
-    saveTopics([...topics, { id: db.uid(), name: draft.name.trim(), parcial: Number(draft.parcial) || 1, status: "pendiente" }]);
-    setDraft({ name: "", parcial: draft.parcial });
-    setAdding(false);
-  }
-
-  function setStatus(topicId, status) {
-    saveTopics(topics.map((t) => (t.id === topicId ? { ...t, status } : t)));
-  }
-
-  async function startQuiz(topic) {
-    setError(""); setLoading("Armando tu autoevaluación…");
-    try {
-      const qs = await generateQuiz({ topicName: topic.name, context: ctxFor(topic), n: 6 });
-      if (!qs.length) throw new Error("No se generaron preguntas. ¿Cargaste material del tema?");
-      setQuiz(qs); setActive(topic); setMode("quiz");
-    } catch (e) { setError(e.message); }
-    setLoading("");
-  }
-
-  async function startMap(topic) {
-    setError(""); setLoading("Dibujando el mapa mental…");
-    try {
-      const m = await generateMindMap({ topicName: topic.name, context: ctxFor(topic) });
-      setMap(m); setActive(topic); setMode("map");
-    } catch (e) { setError(e.message); }
-    setLoading("");
-  }
-
-  async function onQuizFinish({ score, total }) {
-    const pct = Math.round((score / total) * 100);
-    setStatus(active.id, pct >= 70 ? "dominado" : "repasar");
-    const hist = await db.getHistory(subjectId);
-    await db.saveHistory(subjectId, [
-      { id: db.uid(), topicId: active.id, topicName: active.name, date: Date.now(), score, total },
-      ...hist,
-    ]);
-  }
-
-  // ── Vistas de actividad ──────────────────────────────────────
-  if (mode === "quiz" && quiz) {
-    return (
-      <Activity title={`Autoevaluación · ${active.name}`} onBack={() => setMode("menu")}>
-        <QuizRunner questions={quiz} context={ctxFor(active)} onFinish={onQuizFinish} />
-      </Activity>
-    );
-  }
-  if (mode === "map" && map) {
-    return (
-      <Activity title={`Mapa mental · ${active.name}`} onBack={() => setMode("menu")}>
-        <MindMap data={map} />
-      </Activity>
-    );
-  }
-  if (mode === "chat" && active) {
-    return (
-      <Activity title={`Preguntar · ${active.name}`} onBack={() => setMode("menu")}>
-        <ChatPanel context={ctxFor(active)} />
-      </Activity>
-    );
-  }
-
-  // ── Menú principal de temas ──────────────────────────────────
-  const byParcial = groupBy(topics, (t) => t.parcial);
-  const parciales = Object.keys(byParcial).map(Number).sort((a, b) => a - b);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="font-display text-xl font-semibold">Estudiar</h2>
-          <p className="text-sm text-muted">Creá los temas de cada parcial y estudialos uno por uno.</p>
-        </div>
-        <Btn onClick={() => setAdding((v) => !v)}><Plus size={16} /> Tema</Btn>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Nuevo tema"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} disabled={!name.trim() || saving}>
+            Crear tema
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Nombre del tema">
+          <Input
+            autoFocus
+            placeholder="Ej: Límites y continuidad"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
+          />
+        </Field>
+        <Field label="Número de parcial">
+          <Input
+            type="number"
+            min={1}
+            value={parcial}
+            onChange={(e) => setParcial(e.target.value)}
+          />
+        </Field>
+      </div>
+    </Modal>
+  );
+}
+
+export default function StudyTab({ subjectId, temas, reloadTemas }) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [toDelete, setToDelete] = useState(null);
+
+  const groups = useMemo(() => {
+    const byParcial = new Map();
+    for (const t of temas) {
+      if (!byParcial.has(t.parcial)) byParcial.set(t.parcial, []);
+      byParcial.get(t.parcial).push(t);
+    }
+    return Array.from(byParcial.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([parcial, items]) => [
+        parcial,
+        items.slice().sort((a, b) => a.createdAt - b.createdAt),
+      ]);
+  }, [temas]);
+
+  const nextParcial = groups.length ? groups[groups.length - 1][0] : 1;
+
+  async function setEstado(temaId, estado) {
+    await db.temas.update(temaId, { estado });
+    reloadTemas();
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted">
+          Tocá una luz para marcar cómo llevás cada tema: rojo (no sé nada), amarillo (repasar) o
+          verde (ya lo estudié).
+        </p>
+        <Button icon={Plus} onClick={() => setModalOpen(true)} className="shrink-0">
+          Nuevo tema
+        </Button>
       </div>
 
-      {!hasMaterial && (
-        <Card className="p-3 mb-3 bg-oroSoft border-oro/30 text-sm text-ink/80">
-          Ojo: todavía no cargaste material ni apuntes. La IA arma mejor los quizzes y mapas si primero subís algo en <b>Materiales</b> o <b>Apuntes</b>.
-        </Card>
-      )}
-
-      {adding && (
-        <Card className="p-4 mb-4 flex gap-3 items-end flex-wrap">
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-xs text-muted">Nombre del tema</label>
-            <input autoFocus value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-              onKeyDown={(e) => e.key === "Enter" && addTopic()}
-              placeholder="Ej: Elasticidad de la demanda"
-              className="w-full border border-line rounded-xl px-3 py-2 text-sm mt-1" />
-          </div>
-          <div>
-            <label className="text-xs text-muted">Parcial</label>
-            <input type="number" min={1} value={draft.parcial} onChange={(e) => setDraft({ ...draft, parcial: e.target.value })}
-              className="w-20 border border-line rounded-xl px-3 py-2 text-sm mt-1" />
-          </div>
-          <Btn onClick={addTopic}>Agregar</Btn>
-        </Card>
-      )}
-
-      {loading && <Card className="p-4 mb-3"><Spinner label={loading} /></Card>}
-      {error && <Card className="p-3 mb-3 bg-flojoSoft border-flojo/30 text-flojo text-sm">{error}</Card>}
-
-      {topics.length === 0 && !adding ? (
-        <Empty icon={Brain} title="Sin temas todavía" hint="Cargá los temas que entran en cada parcial. Después los vas estudiando de a uno." />
+      {temas.length === 0 ? (
+        <EmptyState
+          icon={BookOpen}
+          title="Todavía no cargaste temas"
+          description="Creá los temas de cada parcial para hacer el seguimiento con el semáforo."
+        />
       ) : (
         <div className="space-y-6">
-          {parciales.map((p) => (
-            <div key={p}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="font-display font-semibold text-oro">Parcial {p}</span>
-                <span className="h-px flex-1 bg-line" />
-                <span className="text-xs text-muted">{byParcial[p].length} temas</span>
-              </div>
-              <div className="grid gap-2">
-                {byParcial[p].map((t) => (
-                  <Card key={t.id} className="p-4">
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{t.name}</span>
-                        <Badge tone={STATUS[t.status].tone}>{STATUS[t.status].label}</Badge>
-                      </div>
-                      <div className="flex gap-2">
-                        <Btn size="sm" onClick={() => startQuiz(t)} disabled={!!loading}><Sparkles size={14} /> Autoevaluación</Btn>
-                        <Btn size="sm" variant="outline" onClick={() => startMap(t)} disabled={!!loading}><Network size={14} /> Mapa</Btn>
-                        <Btn size="sm" variant="outline" onClick={() => { setActive(t); setMode("chat"); }}><MessageCircle size={14} /> Preguntar</Btn>
-                      </div>
+          {groups.map(([parcial, items]) => (
+            <div key={parcial}>
+              <h3 className="mb-2 font-display text-sm font-semibold uppercase tracking-wide text-muted">
+                Parcial {parcial}
+              </h3>
+              <ul className="space-y-2">
+                {items.map((t) => (
+                  <li key={t.id}>
+                    <div className="flex items-center gap-3 rounded-xl2 border border-line bg-white px-4 py-3 shadow-soft">
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">
+                        {t.name}
+                      </span>
+                      <Semaforo estado={t.estado} onChange={(estado) => setEstado(t.id, estado)} />
+                      <button
+                        aria-label={`Borrar ${t.name}`}
+                        title="Borrar tema"
+                        className="rounded-lg p-2 text-muted hover:bg-sinverSoft hover:text-sinver focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tinta"
+                        onClick={() => setToDelete(t)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                  </Card>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           ))}
         </div>
       )}
+
+      <NewTemaModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        subjectId={subjectId}
+        defaultParcial={nextParcial}
+        onCreated={reloadTemas}
+      />
+
+      <ConfirmDialog
+        open={!!toDelete}
+        onClose={() => setToDelete(null)}
+        onConfirm={async () => {
+          await db.temas.remove(toDelete.id);
+          reloadTemas();
+        }}
+        title="Borrar tema"
+        description={`Se va a borrar "${toDelete?.name ?? ""}" del seguimiento.`}
+        confirmLabel="Borrar"
+      />
     </div>
   );
-}
-
-function Activity({ title, onBack, children }) {
-  return (
-    <div>
-      <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted hover:text-ink mb-4">
-        <ChevronLeft size={16} /> Volver a temas
-      </button>
-      <h2 className="font-display text-lg font-semibold mb-4">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
-function ChatPanel({ context }) {
-  const [msgs, setMsgs] = useState([]);
-  const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function send() {
-    if (!input.trim() || busy) return;
-    const question = input.trim();
-    const history = msgs;
-    setMsgs([...msgs, { role: "user", text: question }]);
-    setInput(""); setBusy(true);
-    try {
-      const ans = await chatAboutMaterial({ question, context, history });
-      setMsgs((m) => [...m, { role: "assistant", text: ans }]);
-    } catch (e) {
-      setMsgs((m) => [...m, { role: "assistant", text: "Error: " + e.message }]);
-    }
-    setBusy(false);
-  }
-
-  return (
-    <Card className="p-4 flex flex-col h-[60vh]">
-      <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-        {msgs.length === 0 && <p className="text-sm text-muted">Preguntale lo que quieras sobre este tema. Responde con tu material.</p>}
-        {msgs.map((m, i) => (
-          <div key={i} className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-tinta text-white ml-auto rounded-br-sm" : "bg-line/50 text-ink rounded-bl-sm"}`}>
-            {m.text}
-          </div>
-        ))}
-        {busy && <Spinner label="Pensando…" />}
-      </div>
-      <div className="flex gap-2 pt-3 mt-2 border-t border-line">
-        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Escribí tu pregunta…" className="flex-1 border border-line rounded-xl px-3 py-2 text-sm" />
-        <Btn onClick={send} disabled={busy}><Send size={15} /></Btn>
-      </div>
-    </Card>
-  );
-}
-
-function groupBy(arr, fn) {
-  return arr.reduce((acc, x) => { const k = fn(x); (acc[k] ||= []).push(x); return acc; }, {});
 }
