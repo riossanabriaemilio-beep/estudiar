@@ -1,62 +1,81 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { db } from "../lib/db.js";
-import { SUBJECT_COLORS } from "../config.js";
+// Contexto global: lista de materias, materia seleccionada y su CRUD.
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import * as db from "../lib/db.js";
 
-const Ctx = createContext(null);
-export const useApp = () => useContext(Ctx);
+const StoreContext = createContext(null);
 
-export function AppProvider({ children }) {
+const SELECTED_KEY = "estudia:selectedSubjectId";
+
+export function StoreProvider({ children }) {
   const [subjects, setSubjects] = useState([]);
-  const [currentId, setCurrentId] = useState(null);
-  const [ready, setReady] = useState(false);
+  const [selectedId, setSelectedId] = useState(() => localStorage.getItem(SELECTED_KEY) || null);
+  const [loading, setLoading] = useState(true);
+
+  const refreshSubjects = useCallback(async () => {
+    const list = await db.getSubjects();
+    setSubjects(list);
+    return list;
+  }, []);
 
   useEffect(() => {
-    db.getSubjects().then((s) => {
-      setSubjects(s);
-      setCurrentId(s[0]?.id || null);
-      setReady(true);
-    });
-  }, []);
+    (async () => {
+      const list = await refreshSubjects();
+      setSelectedId((current) => {
+        if (current && list.some((s) => s.id === current)) return current;
+        return list[0]?.id ?? null;
+      });
+      setLoading(false);
+    })();
+  }, [refreshSubjects]);
 
-  const persist = useCallback(async (list) => {
-    setSubjects(list);
-    await db.saveSubjects(list);
-  }, []);
+  useEffect(() => {
+    if (selectedId) localStorage.setItem(SELECTED_KEY, selectedId);
+    else localStorage.removeItem(SELECTED_KEY);
+  }, [selectedId]);
 
-  const addSubject = useCallback(
-    async (name) => {
-      const color = SUBJECT_COLORS[subjects.length % SUBJECT_COLORS.length];
-      const s = { id: db.uid(), name: name.trim(), color, createdAt: Date.now() };
-      const list = [...subjects, s];
-      await persist(list);
-      setCurrentId(s.id);
-      return s;
+  const createSubject = useCallback(
+    async (data) => {
+      const subject = await db.addSubject(data);
+      await refreshSubjects();
+      setSelectedId(subject.id);
+      return subject;
     },
-    [subjects, persist]
+    [refreshSubjects]
   );
 
-  const renameSubject = useCallback(
-    async (id, name) => persist(subjects.map((s) => (s.id === id ? { ...s, name } : s))),
-    [subjects, persist]
-  );
-
-  const deleteSubject = useCallback(
+  const removeSubject = useCallback(
     async (id) => {
-      await db.deleteSubjectData(id);
-      const list = subjects.filter((s) => s.id !== id);
-      await persist(list);
-      if (currentId === id) setCurrentId(list[0]?.id || null);
+      await db.deleteSubject(id);
+      const list = await refreshSubjects();
+      setSelectedId((current) => (current === id ? list[0]?.id ?? null : current));
     },
-    [subjects, currentId, persist]
+    [refreshSubjects]
   );
 
-  const current = subjects.find((s) => s.id === currentId) || null;
-
-  return (
-    <Ctx.Provider
-      value={{ subjects, current, currentId, setCurrentId, ready, addSubject, renameSubject, deleteSubject }}
-    >
-      {children}
-    </Ctx.Provider>
+  const selectedSubject = useMemo(
+    () => subjects.find((s) => s.id === selectedId) || null,
+    [subjects, selectedId]
   );
+
+  const value = useMemo(
+    () => ({
+      subjects,
+      loading,
+      selectedId,
+      selectedSubject,
+      selectSubject: setSelectedId,
+      createSubject,
+      removeSubject,
+      refreshSubjects,
+    }),
+    [subjects, loading, selectedId, selectedSubject, createSubject, removeSubject, refreshSubjects]
+  );
+
+  return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
+}
+
+export function useEstudia() {
+  const ctx = useContext(StoreContext);
+  if (!ctx) throw new Error("useEstudia debe usarse dentro de <StoreProvider>");
+  return ctx;
 }

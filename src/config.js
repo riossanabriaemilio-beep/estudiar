@@ -1,36 +1,49 @@
-// ─────────────────────────────────────────────────────────────
-//  CONFIG CENTRAL  →  tocás solo acá para cambiar el comportamiento
-// ─────────────────────────────────────────────────────────────
+// Configuración centralizada: paleta, colores de materias y estados del semáforo.
 
-export const CONFIG = {
-  // Modelo por defecto. Podés cambiarlo desde Ajustes (⚙) o acá.
-  //  - claude-sonnet-5           → buena relación calidad/precio (recomendado)
-  //  - claude-haiku-4-5-20251001 → más barato y rápido, algo menos fino
-  //  - claude-opus-4-8           → el más capaz, más caro
-  model: "claude-sonnet-5",
+export const SUBJECT_COLORS = [
+  { name: "Violeta", value: "#3A2F7A" },
+  { name: "Oro", value: "#B9862B" },
+  { name: "Verde", value: "#2E7D5B" },
+  { name: "Rojo", value: "#C0453A" },
+  { name: "Celeste", value: "#1F6F8B" },
+  { name: "Magenta", value: "#8C4B9E" },
+  { name: "Naranja", value: "#C9622A" },
+  { name: "Verde azulado", value: "#4E6E58" },
+];
 
-  // Tope de tokens por respuesta según la tarea (podés subirlos si querés más largo)
-  maxTokens: {
-    extract: 4000, // transcribir PDFs escaneados / imágenes / word
-    quiz: 3000,
-    mockExam: 4000,
-    mindMap: 3000,
-    analysis: 4000,
-    chat: 2000,
+// Estados posibles de un tema en la pestaña "Estudiar".
+export const ESTADOS = {
+  dominado: {
+    key: "dominado",
+    label: "Ya lo estudié",
+    text: "text-ok",
+    bg: "bg-ok",
+    soft: "bg-okSoft",
   },
-
-  // Cuánto texto de tus materiales le mandamos como contexto (en caracteres).
-  // Más = más preciso pero más caro. ~12000 chars ≈ 3000 tokens aprox.
-  contextCharBudget: 16000,
-
-  anthropic: {
-    endpoint: "https://api.anthropic.com/v1/messages",
-    version: "2023-06-01",
+  repasar: {
+    key: "repasar",
+    label: "Más o menos, repasar",
+    text: "text-repasar",
+    bg: "bg-repasar",
+    soft: "bg-repasarSoft",
+  },
+  sin_ver: {
+    key: "sin_ver",
+    label: "No sé nada",
+    text: "text-sinver",
+    bg: "bg-sinver",
+    soft: "bg-sinverSoft",
   },
 };
 
-// Paleta de colores para las materias (elegís al crearlas)
-export const SUBJECT_COLORS = [
-  "#3A2F7A", "#B9862B", "#2E7D5B", "#C0453A",
-  "#1F6F8B", "#7A3F9A", "#C77D2E", "#4A5568",
+export const ESTADO_DEFAULT = "sin_ver";
+
+export const TABS = [
+  { key: "estudiar", label: "Estudiar" },
+  { key: "materiales", label: "Materiales" },
+  { key: "apuntes", label: "Apuntes" },
+  { key: "parciales", label: "Parciales viejos" },
+  { key: "examenes", label: "Exámenes para resolver" },
 ];
+
+export const MAX_FILE_SIZE_MB = 25;

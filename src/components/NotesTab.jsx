@@ -1,83 +1,130 @@
-import { useEffect, useState } from "react";
-import { Plus, CalendarDays, Trash2 } from "lucide-react";
-import { db } from "../lib/db.js";
-import { Btn, Card, Empty } from "./ui.jsx";
+import { useCallback, useEffect, useState } from "react";
+import { NotebookPen, Trash2 } from "lucide-react";
+import * as db from "../lib/db.js";
+import { Button, Card, ConfirmDialog, EmptyState, Field, IconButton, Input, Textarea } from "./ui.jsx";
+
+function todayISO() {
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off * 60_000).toISOString().slice(0, 10);
+}
+
+function formatDate(iso) {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
 
 export default function NotesTab({ subjectId }) {
   const [notes, setNotes] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState({ date: today(), title: "", content: "" });
+  const [loading, setLoading] = useState(true);
+  const [date, setDate] = useState(todayISO());
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [toDelete, setToDelete] = useState(null);
 
-  useEffect(() => {
-    db.getNotes(subjectId).then((n) => setNotes(sortByDate(n)));
+  const reload = useCallback(async () => {
+    const list = await db.notes.list(subjectId);
+    setNotes(list.slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.createdAt - a.createdAt)));
+    setLoading(false);
   }, [subjectId]);
 
-  async function save(list) {
-    const sorted = sortByDate(list);
-    setNotes(sorted);
-    await db.saveNotes(subjectId, sorted);
-  }
+  useEffect(() => {
+    setLoading(true);
+    reload();
+  }, [reload]);
 
-  function add() {
-    if (!draft.content.trim()) return;
-    save([...notes, { id: db.uid(), ...draft }]);
-    setDraft({ date: today(), title: "", content: "" });
-    setOpen(false);
+  async function handleSave() {
+    if (!content.trim()) return;
+    setSaving(true);
+    await db.notes.add({ subjectId, date, title: title.trim(), content: content.trim() });
+    setTitle("");
+    setContent("");
+    setDate(todayISO());
+    setSaving(false);
+    reload();
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="font-display text-xl font-semibold">Apuntes por día</h2>
-          <p className="text-sm text-muted">Anotá lo que se vio en cada clase. Después la IA lo usa como material.</p>
+    <div className="space-y-6">
+      <Card className="p-4">
+        <h3 className="mb-3 font-display font-semibold text-ink">Nuevo apunte</h3>
+        <div className="grid gap-3 sm:grid-cols-[160px_1fr]">
+          <Field label="Fecha">
+            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </Field>
+          <Field label="Título (opcional)">
+            <Input
+              placeholder="Ej: Clase de repaso"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </Field>
         </div>
-        <Btn onClick={() => setOpen((v) => !v)}><Plus size={16} /> Apunte</Btn>
-      </div>
+        <div className="mt-3">
+          <Field label="Contenido">
+            <Textarea
+              rows={5}
+              placeholder="Escribí tu apunte acá..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
+          </Field>
+        </div>
+        <div className="mt-3 flex justify-end">
+          <Button onClick={handleSave} disabled={!content.trim() || saving}>
+            Guardar apunte
+          </Button>
+        </div>
+      </Card>
 
-      {open && (
-        <Card className="p-4 mb-4">
-          <div className="flex gap-3 mb-3">
-            <input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })}
-              className="border border-line rounded-xl px-3 py-2 text-sm" />
-            <input placeholder="Título (opcional)" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-              className="flex-1 border border-line rounded-xl px-3 py-2 text-sm" />
-          </div>
-          <textarea rows={5} placeholder="¿Qué se vio hoy?" value={draft.content} onChange={(e) => setDraft({ ...draft, content: e.target.value })}
-            className="w-full border border-line rounded-xl px-3 py-2 text-sm resize-y focus:outline-none focus-visible:ring-2 focus-visible:ring-tinta/40" />
-          <div className="flex justify-end gap-2 mt-2">
-            <Btn variant="outline" onClick={() => setOpen(false)}>Cancelar</Btn>
-            <Btn onClick={add}>Guardar</Btn>
-          </div>
-        </Card>
-      )}
-
-      {notes.length === 0 && !open ? (
-        <Empty icon={CalendarDays} title="Sin apuntes" hint="Cargá lo que se dictó por día. Suma un montón para las pruebas." />
+      {loading ? (
+        <p className="text-sm text-muted">Cargando apuntes...</p>
+      ) : notes.length === 0 ? (
+        <EmptyState
+          icon={NotebookPen}
+          title="Todavía no cargaste apuntes"
+          description="Anotá lo que vas viendo día a día en cada clase."
+        />
       ) : (
-        <div className="grid gap-2">
+        <ul className="space-y-3">
           {notes.map((n) => (
-            <Card key={n.id} className="p-4">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="font-mono text-oro font-medium">{fmt(n.date)}</span>
-                  {n.title && <span className="font-semibold">· {n.title}</span>}
+            <li key={n.id}>
+              <Card className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-oro">
+                      {formatDate(n.date)}
+                    </p>
+                    {n.title ? (
+                      <p className="mt-0.5 font-display font-medium text-ink">{n.title}</p>
+                    ) : null}
+                  </div>
+                  <IconButton
+                    icon={Trash2}
+                    label="Borrar apunte"
+                    className="hover:!bg-sinverSoft hover:!text-sinver"
+                    onClick={() => setToDelete(n)}
+                  />
                 </div>
-                <Trash2 size={15} className="text-flojo cursor-pointer opacity-60 hover:opacity-100"
-                  onClick={() => save(notes.filter((x) => x.id !== n.id))} />
-              </div>
-              <p className="text-sm text-ink/80 whitespace-pre-wrap">{n.content}</p>
-            </Card>
+                <p className="mt-2 whitespace-pre-wrap text-sm text-ink/90">{n.content}</p>
+              </Card>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
+
+      <ConfirmDialog
+        open={!!toDelete}
+        onClose={() => setToDelete(null)}
+        onConfirm={async () => {
+          await db.notes.remove(toDelete.id);
+          reload();
+        }}
+        title="Borrar apunte"
+        description="Esta acción no se puede deshacer."
+        confirmLabel="Borrar"
+      />
     </div>
   );
-}
-
-function today() { return new Date().toISOString().slice(0, 10); }
-function sortByDate(list) { return [...list].sort((a, b) => (a.date < b.date ? 1 : -1)); }
-function fmt(d) {
-  try { return new Date(d + "T00:00").toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" }); }
-  catch { return d; }
 }

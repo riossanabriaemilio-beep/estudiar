@@ -1,85 +1,163 @@
 import { useState } from "react";
-import { Plus, Settings as Cog, GraduationCap, Trash2 } from "lucide-react";
-import { useApp } from "../state/store.jsx";
-import { Btn } from "./ui.jsx";
+import { GraduationCap, Plus, Trash2 } from "lucide-react";
+import { useEstudia } from "../state/store.jsx";
+import { SUBJECT_COLORS } from "../config.js";
+import { Button, ConfirmDialog, Field, IconButton, Input, Modal } from "./ui.jsx";
 
-export default function Sidebar({ onOpenSettings }) {
-  const { subjects, currentId, setCurrentId, addSubject, deleteSubject } = useApp();
-  const [adding, setAdding] = useState(false);
+function AddSubjectModal({ open, onClose }) {
+  const { createSubject } = useEstudia();
   const [name, setName] = useState("");
+  const [color, setColor] = useState(SUBJECT_COLORS[0].value);
+  const [saving, setSaving] = useState(false);
 
-  async function submit() {
-    if (!name.trim()) return;
-    await addSubject(name);
+  function reset() {
     setName("");
-    setAdding(false);
+    setColor(SUBJECT_COLORS[0].value);
+  }
+
+  async function handleSave() {
+    if (!name.trim()) return;
+    setSaving(true);
+    await createSubject({ name: name.trim(), color });
+    setSaving(false);
+    reset();
+    onClose();
   }
 
   return (
-    <aside className="w-72 shrink-0 h-full bg-panel border-r border-line flex flex-col">
-      <div className="px-5 py-5 border-b border-line">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-tinta text-white flex items-center justify-center">
-            <GraduationCap size={20} />
-          </div>
-          <div>
-            <div className="font-display font-bold text-lg leading-none">EstudIA</div>
-            <div className="text-xs text-muted mt-0.5">tu sistema de estudio</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-3 py-3 flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted px-2">Materias</span>
-        <Btn variant="ghost" size="sm" onClick={() => setAdding((v) => !v)}><Plus size={16} /></Btn>
-      </div>
-
-      {adding && (
-        <div className="px-3 pb-2">
-          <input
+    <Modal
+      open={open}
+      onClose={() => {
+        reset();
+        onClose();
+      }}
+      title="Nueva materia"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} disabled={!name.trim() || saving}>
+            Crear materia
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Nombre">
+          <Input
             autoFocus
+            placeholder="Ej: Análisis Matemático II"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submit()}
-            placeholder="Ej: Microeconomía"
-            className="w-full border border-line rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-tinta/40"
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
           />
-          <div className="flex gap-2 mt-2">
-            <Btn size="sm" onClick={submit} className="flex-1">Crear</Btn>
-            <Btn size="sm" variant="outline" onClick={() => setAdding(false)}>Cancelar</Btn>
+        </Field>
+        <Field label="Color">
+          <div className="flex flex-wrap gap-2">
+            {SUBJECT_COLORS.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                aria-label={c.name}
+                title={c.name}
+                onClick={() => setColor(c.value)}
+                className={`h-8 w-8 rounded-full border-2 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tinta focus-visible:ring-offset-2 ${
+                  color === c.value ? "scale-110 border-ink" : "border-transparent"
+                }`}
+                style={{ backgroundColor: c.value }}
+              />
+            ))}
           </div>
-        </div>
-      )}
+        </Field>
+      </div>
+    </Modal>
+  );
+}
 
-      <nav className="flex-1 overflow-y-auto px-3 space-y-1">
-        {subjects.length === 0 && !adding && (
-          <p className="text-sm text-muted px-2 py-4">Todavía no tenés materias. Tocá <b>+</b> para crear la primera.</p>
+export default function Sidebar({ onNavigate }) {
+  const { subjects, selectedId, selectSubject, removeSubject } = useEstudia();
+  const [addOpen, setAddOpen] = useState(false);
+  const [toDelete, setToDelete] = useState(null);
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center gap-2 px-5 pb-4 pt-6">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-tinta text-white">
+          <GraduationCap size={19} strokeWidth={2.25} />
+        </div>
+        <span className="font-display text-lg font-semibold tracking-tight text-ink">
+          EstudIA
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between px-5 pb-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted">
+          Materias
+        </span>
+        <IconButton icon={Plus} label="Nueva materia" onClick={() => setAddOpen(true)} />
+      </div>
+
+      <nav className="scrollbar-thin flex-1 overflow-y-auto px-3 pb-4">
+        {subjects.length === 0 ? (
+          <p className="px-2 py-3 text-sm text-muted">
+            Todavía no tenés materias. Creá una con el botón +.
+          </p>
+        ) : (
+          <ul className="space-y-1">
+            {subjects.map((s) => (
+              <li key={s.id}>
+                <div
+                  className={`group flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors ${
+                    selectedId === s.id ? "bg-tintaSoft" : "hover:bg-paper"
+                  }`}
+                >
+                  <button
+                    className="flex min-w-0 flex-1 items-center gap-2.5 text-left focus-visible:outline-none"
+                    onClick={() => {
+                      selectSubject(s.id);
+                      onNavigate?.();
+                    }}
+                  >
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: s.color }}
+                    />
+                    <span
+                      className={`truncate text-sm ${
+                        selectedId === s.id ? "font-medium text-tinta" : "text-ink"
+                      }`}
+                    >
+                      {s.name}
+                    </span>
+                  </button>
+                  <IconButton
+                    icon={Trash2}
+                    label={`Borrar ${s.name}`}
+                    className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:!bg-sinverSoft hover:!text-sinver"
+                    onClick={() => setToDelete(s)}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
-        {subjects.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setCurrentId(s.id)}
-            className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
-              currentId === s.id ? "bg-tintaSoft" : "hover:bg-line/50"
-            }`}
-          >
-            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: s.color }} />
-            <span className={`flex-1 text-sm truncate ${currentId === s.id ? "font-semibold text-tinta" : "text-ink"}`}>{s.name}</span>
-            <Trash2
-              size={14}
-              className="opacity-0 group-hover:opacity-60 hover:!opacity-100 text-flojo transition-opacity"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (confirm(`¿Borrar "${s.name}" y todo su contenido?`)) deleteSubject(s.id);
-              }}
-            />
-          </button>
-        ))}
       </nav>
 
-      <div className="p-3 border-t border-line">
-        <Btn variant="outline" onClick={onOpenSettings} className="w-full"><Cog size={16} /> Ajustes</Btn>
+      <div className="border-t border-line px-5 py-3 text-xs text-muted">
+        100% offline · guardado en tu navegador
       </div>
-    </aside>
+
+      <AddSubjectModal open={addOpen} onClose={() => setAddOpen(false)} />
+
+      <ConfirmDialog
+        open={!!toDelete}
+        onClose={() => setToDelete(null)}
+        onConfirm={() => toDelete && removeSubject(toDelete.id)}
+        title={`Borrar "${toDelete?.name ?? ""}"`}
+        description="Se va a borrar la materia y TODO lo que tiene guardado: materiales, apuntes, temas, parciales viejos y exámenes. Esta acción no se puede deshacer."
+        confirmLabel="Borrar materia"
+      />
+    </div>
   );
 }
