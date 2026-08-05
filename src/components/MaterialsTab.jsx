@@ -1,9 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FileText, Image as ImageIcon, Trash2, UploadCloud, Eye, AlertTriangle } from "lucide-react";
+import {
+  FileText,
+  Image as ImageIcon,
+  Trash2,
+  UploadCloud,
+  Eye,
+  AlertTriangle,
+  ScrollText,
+  Copy,
+  NotebookPen,
+  Check,
+} from "lucide-react";
 import * as db from "../lib/db.js";
 import { extractText } from "../lib/ingest.js";
+import { summarizeText } from "../lib/summarize.js";
+import { todayISO } from "../lib/date.js";
 import { MAX_FILE_SIZE_MB } from "../config.js";
-import { Badge, Button, ConfirmDialog, EmptyState, IconButton, Modal, Textarea } from "./ui.jsx";
+import { Badge, Button, ConfirmDialog, EmptyState, IconButton, Modal, Select, Textarea } from "./ui.jsx";
+
+const SUMMARY_LENGTHS = [
+  { key: "corto", label: "Corto" },
+  { key: "medio", label: "Medio" },
+  { key: "largo", label: "Largo" },
+];
 
 function iconFor(type) {
   if (type === "imagen") return ImageIcon;
@@ -20,6 +39,111 @@ function formatBytes(bytes) {
     i++;
   }
   return `${n.toFixed(n >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+function SummarySection({ material, text }) {
+  const [length, setLength] = useState("medio");
+  const [result, setResult] = useState(null);
+  const [warning, setWarning] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
+
+  useEffect(() => {
+    setResult(null);
+    setWarning("");
+    setCopied(false);
+    setNoteSaved(false);
+  }, [material?.id]);
+
+  function generate() {
+    const outcome = summarizeText(text, { length });
+    if (!outcome) {
+      setResult(null);
+      setWarning("El texto es demasiado corto como para armar un resumen que valga la pena.");
+      return;
+    }
+    setWarning("");
+    setResult(outcome);
+    setCopied(false);
+    setNoteSaved(false);
+  }
+
+  async function copySummary() {
+    if (!result) return;
+    await navigator.clipboard.writeText(result.summary);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function saveAsNote() {
+    if (!result) return;
+    await db.notes.add({
+      subjectId: material.subjectId,
+      date: todayISO(),
+      title: `Resumen: ${material.name}`,
+      content: result.summary,
+    });
+    setNoteSaved(true);
+    setTimeout(() => setNoteSaved(false), 2500);
+  }
+
+  return (
+    <div className="rounded-xl2 border border-line bg-paper/60 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <ScrollText size={16} className="text-tinta" />
+          <h4 className="font-display text-sm font-semibold text-ink">Resumen automático</h4>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select
+            value={length}
+            onChange={(e) => setLength(e.target.value)}
+            className="!w-auto !py-1.5 text-xs"
+          >
+            {SUMMARY_LENGTHS.map((l) => (
+              <option key={l.key} value={l.key}>
+                {l.label}
+              </option>
+            ))}
+          </Select>
+          <Button size="sm" variant="secondary" onClick={generate} disabled={!text.trim()}>
+            {result ? "Regenerar" : "Generar resumen"}
+          </Button>
+        </div>
+      </div>
+      <p className="mt-1.5 text-xs text-muted">
+        Extracto armado con un algoritmo local (sin IA): elige las oraciones cuyas palabras se
+        repiten más en el texto. No reemplaza leer el material, es una ayuda para repasar rápido.
+      </p>
+
+      {warning ? <p className="mt-3 text-xs text-sinver">{warning}</p> : null}
+
+      {result ? (
+        <div className="mt-3 space-y-2">
+          <div className="max-h-56 overflow-y-auto rounded-lg bg-white px-3 py-2.5 text-sm leading-relaxed text-ink">
+            {result.summary}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs text-muted">
+              {result.sentenceCount} de {result.totalSentences} oraciones
+            </p>
+            <div className="flex-1" />
+            <Button size="sm" variant="secondary" icon={copied ? Check : Copy} onClick={copySummary}>
+              {copied ? "Copiado" : "Copiar"}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={noteSaved ? Check : NotebookPen}
+              onClick={saveAsNote}
+            >
+              {noteSaved ? "Guardado" : "Guardar como apunte"}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function ViewMaterialModal({ material, onClose, onSaved }) {
@@ -88,6 +212,8 @@ function ViewMaterialModal({ material, onClose, onSaved }) {
           className="font-mono text-[13px] leading-relaxed"
         />
         <p className="text-xs text-muted">{text.length.toLocaleString("es-AR")} caracteres</p>
+
+        {text.trim() ? <SummarySection material={material} text={text} /> : null}
       </div>
     </Modal>
   );
