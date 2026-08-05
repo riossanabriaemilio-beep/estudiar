@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { NotebookPen, Trash2 } from "lucide-react";
 import * as db from "../lib/db.js";
+import { todayISO } from "../lib/date.js";
 import { Button, Card, ConfirmDialog, EmptyState, Field, IconButton, Input, Textarea } from "./ui.jsx";
-
-function todayISO() {
-  const d = new Date();
-  const off = d.getTimezoneOffset();
-  return new Date(d.getTime() - off * 60_000).toISOString().slice(0, 10);
-}
 
 function formatDate(iso) {
   const [y, m, d] = iso.split("-");
