@@ -18,12 +18,13 @@ window.SIGMA_CONFIG = {
 
   aviso: "Propuesta de diseño para Sigma — no es el sitio oficial",
 
+  // En collabs.html los "#..." apuntan a index.html automáticamente
   nav: [
-    { texto: "Producto", href: "#sabores" },
+    { texto: "Productos", href: "#sabores" },
     { texto: "Qué tiene", href: "#que-tiene" },
     { texto: "Dónde comprar", href: "#donde-comprar" },
     { texto: "Mayoristas", href: "#mayoristas" },
-    { texto: "Comunidad", href: "#comunidad" },
+    { texto: "Collabs", href: "collabs.html" },
   ],
 
   inicio: {
@@ -40,7 +41,7 @@ window.SIGMA_CONFIG = {
       nombre: "Chocolate",
       bajada: "Baño de chocolate y relleno de manteca de maní.",
       imagen: "img/render-chocolate.webp",
-      alt: "Render 3D de un alfajor bañado en chocolate con relleno de manteca de maní",
+      alt: "Render 3D de un alfajor bañado en chocolate",
       boton: { texto: "Comprar Chocolate", href: "#donde-comprar" },
     },
     {
@@ -48,10 +49,24 @@ window.SIGMA_CONFIG = {
       nombre: "Blanco",
       bajada: "Baño blanco y relleno de manteca de maní.",
       imagen: "img/render-blanco.webp",
-      alt: "Render 3D de un alfajor con baño blanco y relleno de manteca de maní",
+      alt: "Render 3D de un alfajor con baño blanco",
       boton: { texto: "Comprar Blanco", href: "#donde-comprar" },
     },
   ],
+
+  // Segundo producto: snack proteico (datos tomados del envase)
+  snack: {
+    id: "snack",
+    nombre: "Snack proteico",
+    sabor: "Queso parmesano",
+    bajada: "Arroz + whey, sabor queso parmesano.",
+    datos: ["15 g de proteína por paquete", "Fuente de fibra", "Sin gluten"],
+    peso: null, // [PENDIENTE] peso neto del paquete (no se lee bien en la foto)
+    imagen: "img/snack.webp",
+    alt: "Paquete de Snack proteico Sigma de arroz y whey, sabor queso parmesano, con 15 g de proteína por paquete",
+    // [PENDIENTE] link de compra del snack. Mientras tanto, consulta por Instagram.
+    boton: { texto: "Consultar por Instagram", href: "https://ig.me/m/sigmafood.ar" },
+  },
 
   nutricion: {
     porcion: "Por unidad (63 g)",
@@ -154,6 +169,10 @@ window.SIGMA_CONFIG = {
       r: "Manteca de maní, whey, miel y chocolate. La lista completa de ingredientes está en el envase.",
     },
     {
+      p: "¿El snack es sin gluten?",
+      r: "Sí, el envase del Snack proteico sabor queso parmesano dice sin gluten.",
+    },
+    {
       p: "¿Dónde lo compro?",
       r: "En Farmacity, en Mercado Libre y en The Food Market. Tenés los links en la sección Dónde comprar.",
     },
@@ -163,9 +182,31 @@ window.SIGMA_CONFIG = {
     },
     {
       p: "¿Hacen colaboraciones?",
-      r: "Sí, con creadores de contenido fitness. Escribinos por Instagram (@sigmafood.ar) o por mail.",
+      r: "Sí. Buscamos perfiles del mundo fitness, nutrición y vida activa. Mandanos un DM a @sigmafood.ar y te enviamos toda la info.",
     },
   ],
+
+  // Página collabs.html (textos de la historia destacada "Collabs" de Instagram)
+  collabs: {
+    titulo: "¿Querés colaborar con nosotros?",
+    puntos: [
+      "Buscamos perfiles del mundo fitness, nutrición y vida activa.",
+      "Mandanos un DM y te enviamos toda la info.",
+    ],
+    dm: "https://ig.me/m/sigmafood.ar",
+    creadores: [
+      {
+        // [CONFIRMAR] usuario tomado del texto del posteo ("Dale doiverpichhh, dejá un alfajor para el resto")
+        usuario: "@doiverpichhh",
+        url: "https://www.instagram.com/doiverpichhh/",
+        video: "video/collab-sigma.mp4",
+        videoWebm: "video/collab-sigma.webm",
+        poster: "img/collab-poster.webp",
+        texto: "Lo probó en el gimnasio. 15 g de proteína, sabor chocolate. Su veredicto: muy rico.",
+      },
+      // Para sumar otro creador, copiá el bloque de arriba y cambiá los datos.
+    ],
+  },
 
   firma: {
     texto: "Propuesta de diseño por Emilio",

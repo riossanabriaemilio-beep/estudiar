@@ -31,6 +31,11 @@ Después de publicar:
 
 Las carpetas `assets-sigma/` (fotos originales) y `capturas/` no las usa la web; podés sacarlas antes de subir.
 
+## Páginas
+
+- `index.html` — página principal
+- `collabs.html` — página para creadores (link "Collabs" en el menú)
+
 ## Cambiar textos, sabores y links
 
 Todo está en **`js/config.js`**. Editás, guardás y recargás.
@@ -43,6 +48,8 @@ Todo está en **`js/config.js`**. Editás, guardás y recargás.
 - **Tu firma** → `firma.texto` y `firma.whatsapp`.
 - **Fotos de Comunidad** → `comunidad.fotos` (de 3 a 6). Poné las fotos en `img/` en formato WebP.
 - **Preguntas frecuentes** → `faq`.
+- **Snack** → `snack` (sabor, datos, peso, foto, botón).
+- **Collabs** → `collabs` (textos, link de DM y lista de creadores con su video).
 
 Colores y tipografías: variables al principio de `css/styles.css`.
 El alfajor 3D: `js/alfajor3d.js` (colores de los baños en `SABORES`).
@@ -52,6 +59,8 @@ El alfajor 3D: `js/alfajor3d.js` (colores de los baños en `SABORES`).
 ```
 sigma-demo/
 ├── index.html
+├── collabs.html
+├── video/            ← video del collab (MP4 + WebM)
 ├── css/styles.css
 ├── js/config.js      ← textos, links, sabores, nutrición, contacto
 ├── js/app.js         ← arma la página desde config.js

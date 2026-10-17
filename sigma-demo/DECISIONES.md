@@ -58,6 +58,14 @@ Voseo, frases cortas, sin exageraciones ni promesas. Ejemplos: "Terminás la rut
 
 ## Alfajor 3D
 
+> **Versión 2 (rediseño pedido por Emilio):** la primera versión (dos tapas separadas con el relleno a la vista, la tapa se levantaba) se veía muy básica. Se rehízo copiando el alfajor de la foto del envase (`assets-sigma/alfajor-corte.png`):
+> - **Bañado entero** en chocolate: un solo cuerpo alto y redondeado (perfil "superelipse", la base más plana que la tapa), con ondas suaves en el baño.
+> - **Corte**: un plano vertical lo divide en dos. En la cara del corte se ven las capas como en la foto: baño fino, galletita de cacao con trocitos de maní, relleno, galletita.
+> - **Al hacer scroll**, la porción cortada se separa, gira y se apoya al costado mostrando su propio corte; el alfajor gira solo hasta mostrar el corte de frente. Al seguir bajando, se vuelve a cerrar entero (cerrado no se dibuja el corte, así no queda ninguna línea visible).
+> - Técnica: `clippingPlanes` de Three.js para cortar y `ShapeGeometry` para las caras del corte, con texturas generadas por código.
+>
+> Lo de abajo describe la base técnica, que sigue igual.
+
 - **Quedó la Opción A** (modelo hecho con código en Three.js 0.160.0).
 - **No hice la Opción B** (Higgsfield `generate_3d`): el prompt la condiciona a tener una foto limpia del alfajor solo, y las 5 fotos muestran el envase o el alfajor dentro del paquete. Generar un 3D desde el envase hubiera puesto el logo en un objeto inventado, que el BLOQUE E prohíbe.
 - **Cómo está hecho**: dos tapas por torno (LatheGeometry) con canto redondeado y la superficie levemente abombada; el baño tiene ruido en los bordes y relieve fino para que no se vea "de plástico". Relleno de manteca de maní con borde grumoso, vetas en espiral arriba y ~40 trocitos de maní. Luz de estudio (principal cálida + contraluz fría + entorno) y sombra suave en el piso.
@@ -81,6 +89,14 @@ Voseo, frases cortas, sin exageraciones ni promesas. Ejemplos: "Terminás la rut
 **Ojo con la resolución**: las fotos que llegaron miden ~450–590 px de ancho (parecen capturas de Instagram). Se ven bien en celular, pero en escritorio se nota. Pedile a la marca los originales.
 
 La foto de la balanza muestra un pote "WHEY" y una "PASTA DE MANÍ" con una "P" en el envase. Es una foto de la propia marca, pero si esa "P" es otra empresa conviene confirmar que se puede usar.
+
+## Snack proteico y página de Collabs (versión 2)
+
+- **Snack**: datos tomados del envase de la historia (`assets-sigma/snack-historia.png`): "Snack proteico, arroz + whey, sabor queso parmesano", "15 g de proteína por paquete", "Fuente de fibra", "Sin gluten" (logo en el envase y texto de la historia). El **peso neto no se lee bien** en la foto y quedó en `null`. No sé dónde se vende, así que el botón lleva a un DM de Instagram. Va como tercer panel en Productos, con el amarillo del envase (`#F2C230`).
+- **Foto del snack**: recortada de la historia de Instagram (sin los stickers). Es de baja resolución (300 px).
+- **collabs.html**: textos tomados de la historia destacada "Collabs" (`assets-sigma/collabs-historia.png`): "¿Querés colaborar con nosotros? Buscamos perfiles del mundo fitness, nutrición y vida activa. Mandanos un DM y te enviamos toda la info." Los botones abren el DM de Instagram (`https://ig.me/m/sigmafood.ar`). Las viñetas rojas copian las de la historia.
+- **Creadores**: tengo **un solo** video (el que mandaste). El usuario **@doiverpichhh** sale del texto del posteo ("Dale doiverpichhh, dejá un alfajor para el resto…"). **Hay que confirmar** que es la persona del video. No inventé otros influencers: al lado hay un lugar "Tu perfil acá" que invita a escribir. Para sumar creadores se copia el bloque en `config.js` → `collabs.creadores`.
+- **Video**: comprimido a 540×960, en MP4 (H.264, 1,8 MB) y WebM (VP9, 1,6 MB) para que ande en todos los navegadores. No arranca solo: se reproduce con play.
 
 ## Decisiones de contenido
 

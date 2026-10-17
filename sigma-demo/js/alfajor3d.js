@@ -1,8 +1,8 @@
 /*
   SIGMA — alfajor 3D hecho con código (Three.js, sin archivos de modelo).
-  - Dos tapas bañadas (chocolate negro o blanco), relleno de manteca de maní con trozos de maní.
+  - Alfajor bañado entero (chocolate o blanco), con galletitas de cacao con trocitos de maní y relleno.
   - Gira solo; se puede girar arrastrando (en celular, solo el arrastre horizontal: el scroll vertical sigue libre).
-  - Con el scroll, la tapa se levanta y aparecen las etiquetas; al seguir bajando, se cierra.
+  - Con el scroll, se separa una porción y se ve el corte (galletita, relleno, galletita) con las etiquetas; al seguir bajando, se vuelve a cerrar.
   - Si el dispositivo es lento o pide menos movimiento, no se carga: queda la imagen fija.
 */
 import * as THREE from "three";
@@ -85,39 +85,43 @@ function texturaSombra() {
   return new THREE.CanvasTexture(c);
 }
 
-/* ---------- geometría ---------- */
-const R = 1;            // radio del alfajor
-const H_TAPA = 0.25;    // alto de cada tapa bañada
-const H_REL = 0.17;     // alto del relleno
+/* ---------- geometría ----------
+   Un solo cuerpo bañado (como el alfajor real), con perfil "superelipse":
+   lados redondeados, base más plana que la tapa. Un plano vertical lo corta
+   en dos: el cuerpo y la porción. Al abrir, la porción se separa y se ve
+   el corte: galletita de cacao con trocitos de maní, relleno, galletita. */
+const R = 1;          // radio
+const HH = 0.4;       // medio alto total
+const T = 0.045;      // espesor del baño
+const P_TOP = 3.0;    // redondez de la tapa (más chico = más redondo)
+const P_BOT = 5.5;    // la base apoya plana
+const CORTE = 0.42;   // z del plano de corte (hacia la cámara)
+const F_REL = 0.135;  // medio alto del relleno
 
-// Perfil de una tapa (de abajo hacia arriba): base plana, borde redondeado, cara superior apenas abombada
-function perfilTapa() {
-  const p = [];
-  const rc = 0.13;   // radio del canto superior
-  const rb = 0.05;   // radio del canto inferior
-  p.push(new THREE.Vector2(0, 0));
-  p.push(new THREE.Vector2(R - rb - 0.02, 0));
-  for (let i = 1; i <= 6; i++) {
-    const a = -Math.PI / 2 + (i / 6) * (Math.PI / 2);
-    p.push(new THREE.Vector2(R - rb + Math.cos(a) * rb, rb + Math.sin(a) * rb));
+const radioEn = (y, r0, h) => {
+  const p = y < 0 ? P_BOT : P_TOP;
+  const t = Math.min(1, Math.abs(y) / h);
+  return r0 * Math.pow(1 - Math.pow(t, p), 1 / p);
+};
+const rOut = (y) => radioEn(y, R, HH);
+const rIn = (y) => radioEn(y, R - T, HH - T);
+
+function perfil(r0, h) {
+  const pts = [];
+  const N = 90;
+  for (let i = 0; i <= N; i++) {
+    const th = -Math.PI / 2 + (i / N) * Math.PI;
+    const c = Math.cos(th), s = Math.sin(th);
+    const p = s < 0 ? P_BOT : P_TOP;
+    const r = r0 * Math.pow(Math.abs(c), 2 / p);
+    const y = h * Math.sign(s) * Math.pow(Math.abs(s), 2 / p);
+    pts.push(new THREE.Vector2(Math.max(r, 0.0001), y));
   }
-  // lado, con una leve "pollerita" de baño abajo
-  p.push(new THREE.Vector2(R + 0.004, H_TAPA * 0.45));
-  p.push(new THREE.Vector2(R, H_TAPA - rc));
-  for (let i = 1; i <= 12; i++) {
-    const a = (i / 12) * (Math.PI / 2);
-    p.push(new THREE.Vector2(R - rc + Math.cos(a) * rc, H_TAPA - rc + Math.sin(a) * rc));
-  }
-  for (let i = 1; i <= 10; i++) {
-    const r = (R - rc) * (1 - i / 10);
-    const dome = 0.035 * (1 - Math.pow(r / R, 2));
-    p.push(new THREE.Vector2(Math.max(r, 0.0001), H_TAPA + dome));
-  }
-  return p;
+  return pts;
 }
 
-function geometriaTapa(semilla) {
-  const g = new THREE.LatheGeometry(perfilTapa(), 128);
+function geometriaCuerpo() {
+  const g = new THREE.LatheGeometry(perfil(R, HH), 180);
   const pos = g.attributes.position;
   const v = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {
@@ -125,186 +129,217 @@ function geometriaTapa(semilla) {
     const r = Math.hypot(v.x, v.z);
     if (r < 0.02) continue;
     const ang = Math.atan2(v.z, v.x);
-    // irregularidad del baño: ondas suaves en el borde y en la superficie
-    const n = fbm(Math.cos(ang) * 2.2 + semilla, Math.sin(ang) * 2.2 + v.y * 3, 3) - 0.5;
-    const borde = smooth(0.55, 0.95, r);
-    const k = 1 + n * 0.022 * borde;
+    // baño irregular: el borde no es un torno perfecto
+    const n = fbm(Math.cos(ang) * 2.4 + 4.1, Math.sin(ang) * 2.4 + v.y * 2.5, 3) - 0.5;
+    const k = 1 + n * 0.03 * smooth(0.5, 0.95, r);
     v.x *= k; v.z *= k;
-    v.y += (fbm(v.x * 2.5 + semilla, v.z * 2.5, 3) - 0.5) * 0.02 * (v.y > 0.05 ? 1 : 0);
+    // ondas suaves del chocolate arriba
+    if (v.y > 0) v.y += (fbm(v.x * 2.2, v.z * 2.2 + 7, 3) - 0.5) * 0.03 * smooth(0.25, 0.4, v.y);
     pos.setXYZ(i, v.x, v.y, v.z);
   }
-  // UV planas: evitan el "remolino" que deja el torno en el centro de la tapa
+  // UV planas (sin remolino en el centro de la tapa)
   const uv = g.attributes.uv;
-  for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / (2.2 * R) + 0.5, pos.getZ(i) / (2.2 * R) + 0.5);
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / 2.2 + 0.5, pos.getZ(i) / 2.2 + 0.5);
   g.computeVertexNormals();
   return g;
 }
 
-function geometriaRelleno() {
-  const p = [];
-  const rr = R * 0.93;
-  p.push(new THREE.Vector2(0, 0));
-  for (let i = 0; i <= 14; i++) {
-    const t = i / 14;
-    const bulge = Math.sin(t * Math.PI) * 0.06;
-    p.push(new THREE.Vector2(rr + bulge, t * H_REL));
+// Silueta del corte: ancho a cada altura en el plano z = CORTE
+const ancho = (rFn, y) => { const r = rFn(y); return r > CORTE ? Math.sqrt(r * r - CORTE * CORTE) : 0; };
+function rangoY(rFn, h) {
+  let a = null, b = null;
+  for (let i = 0; i <= 2000; i++) {
+    const y = -h + (2 * h * i) / 2000;
+    if (ancho(rFn, y) > 0) { if (a === null) a = y; b = y; }
   }
-  p.push(new THREE.Vector2(0.0001, H_REL));
-  const g = new THREE.LatheGeometry(p, 128);
-  const pos = g.attributes.position;
-  const v = new THREE.Vector3();
-  for (let i = 0; i < pos.count; i++) {
-    v.fromBufferAttribute(pos, i);
-    const r = Math.hypot(v.x, v.z);
-    if (r < 0.05) continue;
-    const ang = Math.atan2(v.z, v.x);
-    // manteca de maní: borde grumoso, con chorreadas
-    const n = fbm(Math.cos(ang) * 4 + 3, Math.sin(ang) * 4 + v.y * 10, 4) - 0.5;
-    const k = 1 + n * 0.08 * smooth(0.6, 0.95, r / R);
-    v.x *= k; v.z *= k;
-    if (v.y > H_REL * 0.9 && r < rr) v.y += (fbm(v.x * 4, v.z * 4, 3) - 0.5) * 0.03;
-    pos.setXYZ(i, v.x, v.y, v.z);
+  return [a, b];
+}
+function franja(rFn, y0, y1, n = 60) {
+  // polígono cerrado de la sección entre y0 e y1
+  const der = [], izq = [];
+  for (let i = 0; i <= n; i++) {
+    const y = y0 + ((y1 - y0) * i) / n;
+    const w = ancho(rFn, y);
+    der.push(new THREE.Vector2(w, y));
+    izq.unshift(new THREE.Vector2(-w, y));
   }
-  g.computeVertexNormals();
-  return g;
+  return der.concat(izq);
+}
+
+/* ---------- texturas del corte ---------- */
+function canvasTex(size, pintar, srgb = true) {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  pintar(c.getContext("2d"), size);
+  const t = new THREE.CanvasTexture(c);
+  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+  // las UV del corte van de -1 a 1
+  t.repeat.set(0.5, 0.5); t.offset.set(0.5, 0.5);
+  return t;
+}
+function pintarGalleta(ctx, s, conColor) {
+  const img = ctx.createImageData(s, s);
+  for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+    const n = fbm(x / s * 40, y / s * 40, 3) * 0.6 + fbm(x / s * 9, y / s * 9, 2) * 0.4;
+    const poro = vnoise(x / s * 90, y / s * 90) > 0.82 ? -26 : 0;
+    const i = (y * s + x) * 4;
+    const b = (n - 0.5) * 46 + poro;
+    if (conColor) { img.data[i] = 64 + b; img.data[i + 1] = 38 + b * 0.75; img.data[i + 2] = 27 + b * 0.55; }
+    else { img.data[i] = img.data[i + 1] = img.data[i + 2] = 128 + b * 2; }
+    img.data[i + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  // trocitos de maní
+  for (let k = 0; k < 34; k++) {
+    const x = hash(k, 11) * s, y = hash(k, 12) * s, r = (2.5 + hash(k, 13) * 4.5) * s / 512;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(hash(k, 14) * 6);
+    ctx.fillStyle = conColor ? `rgb(${168 + hash(k, 15) * 30},${120 + hash(k, 16) * 25},${74 + hash(k, 17) * 20})` : "#ddd";
+    // trozo irregular (polígono), no un óvalo perfecto
+    ctx.beginPath();
+    for (let j = 0; j < 7; j++) {
+      const an = (j / 7) * Math.PI * 2, rr = r * (0.6 + hash(k * 7 + j, 18) * 0.7) * (j % 2 ? 1 : 1.4);
+      j ? ctx.lineTo(Math.cos(an) * rr, Math.sin(an) * rr) : ctx.moveTo(Math.cos(an) * rr, Math.sin(an) * rr);
+    }
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+}
+function pintarRelleno(ctx, s, conColor) {
+  const img = ctx.createImageData(s, s);
+  for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+    // vetas horizontales: el relleno se "arrastra" al cortar
+    const n = fbm(x / s * 3, y / s * 30, 4);
+    const i = (y * s + x) * 4;
+    const b = (n - 0.5) * 34;
+    if (conColor) { img.data[i] = 98 + b; img.data[i + 1] = 56 + b * 0.8; img.data[i + 2] = 34 + b * 0.6; }
+    else { img.data[i] = img.data[i + 1] = img.data[i + 2] = 128 + b * 2; }
+    img.data[i + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
 }
 
 /* ---------- materiales ---------- */
 const SABORES = {
-  chocolate: { color: 0x2b150c, rough: 0.4, sheen: 0x5a3020 },
-  blanco: { color: 0xe6d6b8, rough: 0.5, sheen: 0xf6ead2 },
+  chocolate: { color: 0x3d1d0f, rough: 0.3, sheen: 0x6a3a22 },
+  blanco: { color: 0xe9dcc2, rough: 0.42, sheen: 0xfff3dc },
 };
 
 export function crearAlfajor() {
   const grupo = new THREE.Group();
 
-  const bump = texturaRuido(256, 3, 4, 1.4);
+  // ondas del baño (relieve)
+  const ondas = texturaPlana(512, [128, 128, 128], 200, (x, y) => {
+    const n = fbm(x * 4, y * 4, 3);
+    return 0.55 * (0.5 + 0.5 * Math.sin(y * 34 + n * 7)) + 0.45 * fbm(x * 18, y * 18, 3);
+  });
+  ondas.colorSpace = THREE.NoColorSpace;
 
-  const matBaño = new THREE.MeshPhysicalMaterial({
+  const planoCuerpo = new THREE.Plane(new THREE.Vector3(0, 0, -1), CORTE);
+  const planoPorcion = new THREE.Plane(new THREE.Vector3(0, 0, 1), -CORTE);
+  const baseCuerpo = planoCuerpo.clone(), basePorcion = planoPorcion.clone();
+
+  const opcBaño = {
     color: SABORES.chocolate.color,
     roughness: SABORES.chocolate.rough,
-    bumpMap: bump,
-    bumpScale: 0.9,
-    clearcoat: 0.2,
-    clearcoatRoughness: 0.45,
-    sheen: 0.3,
+    bumpMap: ondas,
+    bumpScale: 0.8,
+    clearcoat: 0.35,
+    clearcoatRoughness: 0.3,
+    sheen: 0.35,
     sheenColor: new THREE.Color(SABORES.chocolate.sheen),
-  });
-
-  // manteca de maní: vetas en espiral, como cuando se esparce con cuchillo
-  const remolino = (x, y) => {
-    const cx = x - 0.5, cy = y - 0.5, r = Math.hypot(cx, cy), a = Math.atan2(cy, cx);
-    const n = fbm(x * 7, y * 7, 4);
-    return 0.55 * n + 0.45 * (0.5 + 0.5 * Math.sin(a * 2 + r * 26 + n * 5));
+    side: THREE.DoubleSide,
   };
-  const texMani = texturaPlana(512, [140, 78, 30], 60, remolino);
-  const bumpMani = texturaPlana(512, [128, 128, 128], 255, remolino);
-  bumpMani.colorSpace = THREE.NoColorSpace;
-  const matRelleno = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    map: texMani,
-    roughness: 0.42,
-    bumpMap: bumpMani,
-    bumpScale: 1.4,
-  });
-  // en el borde del torno el mapa plano se estira: le damos un tono similar sin mapa
-  const matReillenoBorde = new THREE.MeshStandardMaterial({
-    color: 0x8f5222,
-    roughness: 0.45,
-    bumpMap: texturaRuido(256, 10, 4, 1.8),
-    bumpScale: 1.6,
-  });
+  const matCuerpo = new THREE.MeshPhysicalMaterial({ ...opcBaño, clippingPlanes: [planoCuerpo] });
+  const matPorcion = new THREE.MeshPhysicalMaterial({ ...opcBaño, clippingPlanes: [planoPorcion] });
+  const matBañoCorte = new THREE.MeshStandardMaterial({ color: SABORES.chocolate.color, roughness: 0.55, side: THREE.DoubleSide });
 
-  const matGalleta = new THREE.MeshStandardMaterial({
-    map: texturaPlana(256, [92, 58, 38], 60, (x, y) => fbm(x * 30, y * 30, 3)),
-    roughness: 0.9,
-    bumpMap: texturaRuido(256, 20, 3, 2),
-    bumpScale: 1.2,
-  });
+  const galletaMap = canvasTex(512, (c, s) => pintarGalleta(c, s, true));
+  const galletaBump = canvasTex(512, (c, s) => pintarGalleta(c, s, false), false);
+  const matGalleta = new THREE.MeshStandardMaterial({ map: galletaMap, bumpMap: galletaBump, bumpScale: 2.5, roughness: 0.92, side: THREE.DoubleSide });
+  const rellenoMap = canvasTex(512, (c, s) => pintarRelleno(c, s, true));
+  const rellenoBump = canvasTex(512, (c, s) => pintarRelleno(c, s, false), false);
+  const matRelleno = new THREE.MeshPhysicalMaterial({ map: rellenoMap, bumpMap: rellenoBump, bumpScale: 1.2, roughness: 0.38, clearcoat: 0.25, clearcoatRoughness: 0.5, side: THREE.DoubleSide });
 
-  const matMani = new THREE.MeshStandardMaterial({ color: 0xc89358, roughness: 0.6 });
-
-  // Tapa de abajo: espejada
-  const gInf = geometriaTapa(7.3);
-  gInf.scale(1, -1, 1);
-  // al espejar se invierten las caras: corregimos el orden de los índices
-  const idx = gInf.index.array;
-  for (let i = 0; i < idx.length; i += 3) { const t = idx[i + 1]; idx[i + 1] = idx[i + 2]; idx[i + 2] = t; }
-  gInf.computeVertexNormals();
-  const tapaInf = new THREE.Mesh(gInf, matBaño);
-  tapaInf.position.y = -H_REL / 2;
-  grupo.add(tapaInf);
-
-  // Relleno
-  const gRel = geometriaRelleno();
-  const relleno = new THREE.Mesh(gRel, matReillenoBorde);
-  relleno.position.y = -H_REL / 2;
-  grupo.add(relleno);
-  // superficie visible del relleno cuando se levanta la tapa
-  const sup = new THREE.Mesh(new THREE.CircleGeometry(R * 0.92, 96), matRelleno);
-  sup.rotation.x = -Math.PI / 2;
-  sup.position.y = H_REL / 2 + 0.004;
-  grupo.add(sup);
-
-  // Trozos de maní en el borde y arriba del relleno
-  const piezas = new THREE.Group();
-  const gm = new THREE.DodecahedronGeometry(1, 0);
-  for (let i = 0; i < 40; i++) {
-    const enBorde = i < 28;
-    const a = hash(i, 1) * Math.PI * 2;
-    const r = enBorde ? R * (0.95 + hash(i, 2) * 0.04) : Math.sqrt(hash(i, 3)) * R * 0.82;
-    const m = new THREE.Mesh(gm, matMani);
-    const s = 0.024 + hash(i, 4) * 0.026;
-    m.scale.set(s * 1.4, s * 0.8, s);
-    m.position.set(Math.cos(a) * r, enBorde ? (hash(i, 5) - 0.5) * H_REL * 0.7 : H_REL / 2 + 0.006, Math.sin(a) * r);
-    m.rotation.set(hash(i, 6) * 6, hash(i, 7) * 6, hash(i, 8) * 6);
-    piezas.add(m);
+  // La cara del corte: baño (anillo), galletita, relleno, galletita
+  function crearSeccion() {
+    const sec = new THREE.Group();
+    const [oa, ob] = rangoY(rOut, HH);
+    const [ia, ib] = rangoY(rIn, HH - T);
+    const forma = new THREE.Shape(franja(rOut, oa, ob, 120));
+    forma.holes.push(new THREE.Path(franja(rIn, ia, ib, 120)));
+    sec.add(new THREE.Mesh(new THREE.ShapeGeometry(forma, 1), matBañoCorte));
+    const capa = (y0, y1, mat) => {
+      const a = Math.max(y0, ia), b = Math.min(y1, ib);
+      if (b <= a) return;
+      sec.add(new THREE.Mesh(new THREE.ShapeGeometry(new THREE.Shape(franja(rIn, a, b, 50)), 1), mat));
+    };
+    capa(ia, -F_REL, matGalleta);
+    capa(-F_REL, F_REL, matRelleno);
+    capa(F_REL, ib, matGalleta);
+    return sec;
   }
-  grupo.add(piezas);
 
-  // Tapa de arriba (en su propio grupo para poder levantarla)
-  const tapaSupGrupo = new THREE.Group();
-  tapaSupGrupo.position.y = H_REL / 2;
-  const tapaSup = new THREE.Mesh(geometriaTapa(2.1), matBaño);
-  tapaSupGrupo.add(tapaSup);
-  // cara interna: la galletita (se ve cuando se levanta)
-  const galleta = new THREE.Mesh(new THREE.CircleGeometry(R * 0.95, 96), matGalleta);
-  galleta.rotation.x = Math.PI / 2;
-  galleta.position.y = -0.002;
-  tapaSupGrupo.add(galleta);
-  grupo.add(tapaSupGrupo);
+  const geo = geometriaCuerpo();
+
+  const cuerpo = new THREE.Group();
+  cuerpo.add(new THREE.Mesh(geo, matCuerpo));
+  const secCuerpo = crearSeccion();
+  secCuerpo.position.z = CORTE;            // mira hacia +z (la cámara)
+  cuerpo.add(secCuerpo);
+  grupo.add(cuerpo);
+
+  const porcion = new THREE.Group();
+  porcion.add(new THREE.Mesh(geo, matPorcion));
+  const secPorcion = crearSeccion();
+  secPorcion.position.z = CORTE;
+  secPorcion.rotation.y = Math.PI;         // mira hacia el cuerpo
+  porcion.add(secPorcion);
+  grupo.add(porcion);
 
   const colorObjetivo = new THREE.Color(SABORES.chocolate.color);
   const sheenObjetivo = new THREE.Color(SABORES.chocolate.sheen);
   let roughObjetivo = SABORES.chocolate.rough;
+  const baños = [matCuerpo, matPorcion];
 
   return {
     grupo,
-    tapa: tapaSupGrupo,
+    piso: -HH,
     setSabor(id, inmediato) {
       const s = SABORES[id] || SABORES.chocolate;
       colorObjetivo.set(s.color);
       sheenObjetivo.set(s.sheen);
       roughObjetivo = s.rough;
       if (inmediato) {
-        matBaño.color.copy(colorObjetivo);
-        matBaño.sheenColor.copy(sheenObjetivo);
-        matBaño.roughness = roughObjetivo;
+        baños.forEach((m) => { m.color.copy(colorObjetivo); m.sheenColor.copy(sheenObjetivo); m.roughness = roughObjetivo; });
+        matBañoCorte.color.copy(colorObjetivo);
       }
     },
-    // abierto: 0 = cerrado, 1 = tapa levantada
+    // abierto: 0 = entero, 1 = porción separada
     actualizar(abierto, dt) {
       const k = 1 - Math.pow(0.001, dt);
-      matBaño.color.lerp(colorObjetivo, k);
-      matBaño.sheenColor.lerp(sheenObjetivo, k);
-      matBaño.roughness += (roughObjetivo - matBaño.roughness) * k;
-      tapaSupGrupo.position.y = H_REL / 2 + abierto * 0.62;
-      tapaSupGrupo.position.x = -abierto * 0.12;
-      tapaSupGrupo.rotation.z = abierto * 0.32;
-      tapaSupGrupo.rotation.x = -abierto * 0.18;
+      baños.forEach((m) => {
+        m.color.lerp(colorObjetivo, k);
+        m.sheenColor.lerp(sheenObjetivo, k);
+        m.roughness += (roughObjetivo - m.roughness) * k;
+      });
+      matBañoCorte.color.lerp(colorObjetivo, k);
+      const a = abierto;
+      // la porción gira y se apoya al costado mostrando su propio corte
+      porcion.position.set(0.85 * a, 0.25 * Math.sin(a * Math.PI), 0.55 * a);
+      porcion.rotation.set(0, (Math.PI + 0.55) * a, 0);
+      cuerpo.position.set(-0.5 * a, 0, -0.1 * a);
+      // abierto ocupa más ancho: achicamos un poco para que entre en cuadro
+      grupo.scale.setScalar(1 - 0.2 * a);
+      const entero = a < 0.002;
+      // cerrado: sin corte (así no se ve la línea de unión)
+      porcion.visible = secCuerpo.visible = !entero;
+      grupo.updateWorldMatrix(true, true);
+      if (entero) planoCuerpo.set(baseCuerpo.normal, 100);
+      else planoCuerpo.copy(baseCuerpo).applyMatrix4(cuerpo.matrixWorld);
+      planoPorcion.copy(basePorcion).applyMatrix4(porcion.matrixWorld);
     },
   };
 }
+
 
 /* ---------- escena ---------- */
 export function crearEscena(contenedor, opciones = {}) {
@@ -318,6 +353,7 @@ export function crearEscena(contenedor, opciones = {}) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
+  renderer.localClippingEnabled = true;
   contenedor.appendChild(renderer.domElement);
 
   const escena = new THREE.Scene();
@@ -344,7 +380,7 @@ export function crearEscena(contenedor, opciones = {}) {
   escena.add(pivote);
 
   // piso: sombra suave (sin shadow maps: más liviano y sin artefactos)
-  const yPiso = -H_REL / 2 - H_TAPA - 0.01;
+  const yPiso = alfajor.piso - 0.005;
   const sombra = new THREE.Mesh(
     new THREE.PlaneGeometry(2.7, 2.7),
     new THREE.MeshBasicMaterial({ map: texturaSombra(), transparent: true, depthWrite: false })
@@ -354,7 +390,7 @@ export function crearEscena(contenedor, opciones = {}) {
   escena.add(sombra);
 
   // inclinación base para ver la cara superior
-  alfajor.grupo.rotation.x = 0.12;
+  alfajor.grupo.rotation.x = 0.06;
 
   function medir() {
     const w = contenedor.clientWidth || 1, h = contenedor.clientHeight || 1;
@@ -363,7 +399,7 @@ export function crearEscena(contenedor, opciones = {}) {
     renderer.domElement.style.height = "100%";
     camara.aspect = w / h;
     // en pantallas angostas, alejamos la cámara para que entre entero
-    const base = w < 600 ? 6.2 : 5.0;
+    const base = w < 600 ? 6.3 : 5.1;
     const z = w / h < 0.95 ? base / Math.max(w / h, 0.55) * 0.88 : base;
     camara.position.set(0, 2.2 * z / 5.6, z);
     camara.lookAt(0, 0.22, 0);
@@ -396,8 +432,8 @@ function iniciarHero() {
     if (img) {
       img.src = imagenes[sabor];
       img.alt = sabor === "blanco"
-        ? "Alfajor proteico con baño blanco y relleno de manteca de maní, con la tapa levantada"
-        : "Alfajor proteico con baño de chocolate y relleno de manteca de maní, con la tapa levantada";
+        ? "Alfajor proteico con baño blanco y relleno de manteca de maní, cortado al medio"
+        : "Alfajor proteico con baño de chocolate y relleno de manteca de maní, cortado al medio";
     }
     if (escenaRef) escenaRef.alfajor.setSabor(sabor);
   }));
@@ -416,6 +452,7 @@ function iniciarHero() {
   /* giro con mouse o dedo (solo horizontal en táctil, para no trabar el scroll) */
   let arrastrando = false, ultX = 0, ultY = 0, velY = 0, inclX = 0, giro = 0.6;
   const AUTO = 0.32; // rad/seg
+  const VISTA_CORTE = 0.3; // ángulo en el que el corte mira a la cámara
   cont.addEventListener("pointerdown", (e) => {
     arrastrando = true; ultX = e.clientX; ultY = e.clientY;
     cont.setPointerCapture(e.pointerId);
@@ -476,7 +513,12 @@ function iniciarHero() {
     const dt = Math.min(0.05, (t - t0) / 1000); t0 = t;
     if (!arrastrando) {
       velY *= Math.pow(0.04, dt);
-      giro += (AUTO * (1 - abierto * 0.7) + velY) * dt;
+      giro += (AUTO * (1 - smooth(0, 0.3, objetivo)) + velY) * dt;
+      // al abrir, gira solo hasta mostrar el corte de frente
+      if (objetivo > 0.01) {
+        const tgt = VISTA_CORTE + Math.PI * 2 * Math.round((giro - VISTA_CORTE) / (Math.PI * 2));
+        giro += (tgt - giro) * (1 - Math.pow(0.05, dt)) * smooth(0, 0.4, objetivo);
+      }
       inclX *= Math.pow(0.2, dt);
     }
     abierto += (objetivo - abierto) * (1 - Math.pow(0.0005, dt));

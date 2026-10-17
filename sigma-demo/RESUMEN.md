@@ -5,6 +5,11 @@ Una web de una sola página para reemplazar el Linktree de @sigmafood.ar, pensad
 
 Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scroll horizontal, links correctos, el formulario arma bien el mail, el scroll no se traba sobre el 3D en celular, el foco con teclado es visible y axe-core no encontró problemas de accesibilidad (WCAG A/AA). Capturas en `capturas/`.
 
+## Versión 2
+- **Alfajor 3D rehecho** copiando la foto del envase: bañado entero, alto y redondeado. Al hacer scroll se parte y muestra el corte (galletita de cacao con maní, relleno, galletita).
+- **Snack proteico sabor queso parmesano** sumado a Productos (amarillo del envase).
+- **Nueva página `collabs.html`** con los textos de la historia "Collabs", botón de DM y el video del creador (@doiverpichhh, a confirmar). Hay un lugar "Tu perfil acá" para sumar más creadores.
+
 ## Paleta
 | Color | Hex |
 |---|---|
@@ -15,6 +20,7 @@ Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scro
 | Manteca de maní | `#C98B4E` |
 | Crema (de las letras del envase) | `#F4EDDC` |
 | Azul oscuro (texto chico sobre blanco) | `#136A8F` |
+| Amarillo snack | `#F2C230` |
 
 ## Tipografías
 - Títulos y wordmark: **Archivo** 900, condensada (Google Fonts)
@@ -29,6 +35,8 @@ Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scro
 - **Higgsfield: no lo usé. 0 créditos.**
 
 ## Pendiente
+- **Confirmar que @doiverpichhh es el chico del video** y conseguir videos o usuarios de otros creadores (hoy hay uno solo).
+- **Snack**: peso neto, dónde se vende y una foto en buena resolución.
 - **Tabla nutricional**: solo figura "Proteínas 15 g". Faltan calorías, carbohidratos, grasas (totales, saturadas, trans), fibra y sodio, sacados del envase.
 - **WhatsApp de la marca** y **tu número de WhatsApp** (los botones aparecen solos cuando los cargues).
 - **Fotos en alta resolución**: las que llegaron miden ~450–590 px y en escritorio se nota.

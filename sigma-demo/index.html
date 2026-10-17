@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex, nofollow">
 
   <title>SIGMA — Alfajor proteico con 15 g de proteína</title>
-  <meta name="description" content="Alfajor con 15 g de proteína. Manteca de maní, whey, miel y chocolate. Sabores Chocolate y Blanco. Comprá en Farmacity, Mercado Libre y The Food Market.">
+  <meta name="description" content="Alfajor con 15 g de proteína: manteca de maní, whey, miel y chocolate, en Chocolate y Blanco. Y el Snack proteico sabor queso parmesano. Comprá en Farmacity, Mercado Libre y The Food Market.">
   <meta name="theme-color" content="#2994BE">
 
   <!-- Open Graph (WhatsApp, mail, redes). Al publicar, cambiá og:url y og:image por la URL completa del sitio -->
@@ -31,6 +31,16 @@
   <link rel="preload" as="image" href="img/hero-cerrado-chocolate.webp">
   <link rel="stylesheet" href="css/styles.css">
 
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Snack proteico SIGMA sabor queso parmesano",
+    "description": "Snack proteico de arroz y whey, sabor queso parmesano. 15 g de proteína por paquete. Fuente de fibra. Sin gluten.",
+    "brand": { "@type": "Brand", "name": "SIGMA" },
+    "image": "img/snack.webp"
+  }
+  </script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -71,7 +81,7 @@
     })();
   </script>
 </head>
-<body>
+<body data-pagina="inicio">
   <a class="saltar" href="#contenido">Saltar al contenido</a>
 
   <p class="aviso" id="aviso"></p>
@@ -110,7 +120,7 @@
           <img class="alfajor__img alfajor__img--cerrado" id="alfajor-img-cerrado" src="img/hero-cerrado-chocolate.webp" width="900" height="900"
                alt="Alfajor proteico con baño de chocolate y relleno de manteca de maní">
           <img class="alfajor__img alfajor__img--abierto" id="alfajor-img" src="img/hero-chocolate.webp" width="900" height="900"
-               alt="Alfajor proteico con baño de chocolate y relleno de manteca de maní, con la tapa levantada">
+               alt="Alfajor proteico con baño de chocolate y relleno de manteca de maní, cortado al medio">
           <div class="alfajor__canvas" id="alfajor-canvas" aria-hidden="true"></div>
           <ul class="etiquetas" id="etiquetas" aria-label="Qué tiene el alfajor"></ul>
           <p class="alfajor__ayuda" aria-hidden="true">Arrastrá para girarlo</p>
@@ -120,7 +130,7 @@
 
     <!-- 3. Sabores -->
     <section class="sabores" id="sabores" aria-labelledby="sabores-titulo">
-      <h2 class="visually-hidden" id="sabores-titulo">Sabores</h2>
+      <h2 class="visually-hidden" id="sabores-titulo">Productos</h2>
       <div class="sabores__grid" id="sabores-grid"></div>
     </section>
 
@@ -214,7 +224,10 @@
         </div>
         <div class="comunidad__bloques" id="comunidad-bloques"></div>
         <ul class="galeria" id="galeria"></ul>
-        <a class="btn btn--blanco" id="comunidad-ig" href="#" target="_blank" rel="noopener">Seguinos en Instagram</a>
+        <div class="comunidad__botones">
+          <a class="btn btn--blanco" id="comunidad-ig" href="#" target="_blank" rel="noopener">Seguinos en Instagram</a>
+          <a class="btn btn--noche" href="collabs.html">Hacé una collab con Sigma</a>
+        </div>
       </div>
     </section>
 

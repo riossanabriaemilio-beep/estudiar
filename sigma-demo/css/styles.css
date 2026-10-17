@@ -9,7 +9,8 @@
   --crema: #F4EDDC;       /* crema de las letras del envase */
   --choco: #4B2A20;       /* chocolate */
   --mani: #C98B4E;        /* manteca de maní */
-  --rojo: #D9232E;        /* acento: sello de proteína (uso mínimo) */
+  --rojo: #D9232E;        /* acento: sello de proteína / viñetas de Collabs (uso mínimo) */
+  --amarillo: #F2C230;    /* amarillo del envase del snack */
 
   --f-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
   --f-texto: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -141,6 +142,7 @@ ul { margin: 0; padding: 0; list-style: none; }
     padding: 8px 12px; border-radius: 999px;
   }
   .nav a:hover { background: rgba(10, 30, 51, .1); }
+  .nav a[aria-current="page"] { background: var(--noche); color: var(--blanco); }
 }
 
 /* 2. Inicio con alfajor 3D */
@@ -224,24 +226,44 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* 3. Sabores */
 .sabores__grid { display: grid; }
-@media (min-width: 768px) { .sabores__grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 768px) {
+  .sabores__grid { grid-template-columns: 1fr 1fr; }
+  .sabor--snack { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; align-items: center; gap: 32px; }
+  .sabor--snack .sabor__img { margin: 0; }
+}
+@media (min-width: 1200px) {
+  .sabores__grid { grid-template-columns: 1fr 1fr 1fr; }
+  .sabor--snack { grid-column: auto; grid-template-columns: none; gap: 0; }
+  .sabor--snack .sabor__img { margin: 8px auto 0; }
+}
 .sabor {
   position: relative; display: grid; grid-template-rows: auto auto; align-content: start;
   padding: 48px var(--gutter) 24px; overflow: hidden;
 }
 .sabor--chocolate { background: var(--choco); color: var(--crema); }
 .sabor--blanco { background: var(--crema); color: var(--noche); }
+.sabor--snack { background: var(--amarillo); color: var(--noche); }
+.sabor__tipo { font-weight: 600; font-size: .95rem; margin-bottom: 6px; }
+.sabor__lista { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 22px; }
+.sabor__lista li {
+  font-weight: 600; font-size: .9rem; padding: 6px 12px; border-radius: 999px;
+  border: 2px solid var(--noche);
+}
+.sabor__lista li:first-child { background: var(--noche); color: var(--blanco); }
+.sabor__img--foto { aspect-ratio: auto; border-radius: var(--radio); object-fit: cover; width: min(100%, 420px); box-shadow: 0 18px 40px rgba(10, 30, 51, .25); }
 .sabor__nombre {
   font-family: var(--f-display); font-weight: 900; font-stretch: 70%;
-  font-size: clamp(3.4rem, 9vw, 6.5rem); line-height: .85; text-transform: uppercase;
+  font-size: clamp(3rem, 8vw, 5.4rem); line-height: .85; text-transform: uppercase; text-wrap: balance;
 }
 .sabor__bajada { margin-top: 12px; font-size: 1.08rem; max-width: 28ch; }
 .sabor__dato { margin: 10px 0 22px; font-size: .98rem; }
 .sabor__dato strong { font-family: var(--f-display); font-weight: 900; font-size: 1.25rem; }
 .sabor__img { width: min(100%, 460px); margin: 8px auto 0; aspect-ratio: 1; object-fit: contain; }
 @media (min-width: 1100px) {
-  .sabor { padding: 72px 56px 40px; }
-  .sabor__img { width: min(100%, 520px); }
+  .sabor { padding: 64px 40px 40px; }
+}
+@media (min-width: 1200px) {
+  .sabor__nombre { font-size: clamp(3rem, 4.4vw, 4.6rem); }
 }
 
 /* 4. Qué tiene adentro */
@@ -346,6 +368,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .bloque p { margin-top: 6px; max-width: 42ch; }
 .galeria { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 28px 0 32px; }
 @media (min-width: 900px) { .galeria { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
+.comunidad__botones { display: flex; flex-wrap: wrap; gap: 10px; }
 .galeria img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 10px; }
 
 /* 9. Preguntas frecuentes */
@@ -384,3 +407,67 @@ ul { margin: 0; padding: 0; list-style: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* ---------- Página Collabs ---------- */
+.cl-hero { background: var(--azul); padding: 40px 0 56px; overflow: hidden; }
+.cl-hero__grid { display: grid; gap: 24px; align-items: center; }
+@media (min-width: 900px) { .cl-hero__grid { grid-template-columns: 1.1fr .9fr; gap: 48px; } .cl-hero { padding: 72px 0; } }
+.cl-hero__marca {
+  font-family: var(--f-display); font-weight: 900; font-stretch: 75%; color: var(--noche);
+  font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1;
+}
+.cl-hero__titulo {
+  margin-top: 10px;
+  font-family: var(--f-display); font-weight: 900; font-stretch: 70%; text-transform: uppercase;
+  color: var(--blanco); font-size: clamp(2.8rem, 9vw, 5.6rem); line-height: .9; text-wrap: balance;
+}
+.cl-puntos { display: grid; gap: 14px; margin-top: 24px; max-width: 34ch; }
+.cl-puntos li {
+  position: relative; padding-left: 30px;
+  font-family: var(--f-display); font-weight: 800; font-stretch: 85%; font-size: clamp(1.15rem, 2.6vw, 1.4rem); line-height: 1.2;
+}
+.cl-puntos li::before {
+  content: ""; position: absolute; left: 0; top: .2em; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--rojo); box-shadow: 0 0 0 3px var(--blanco);
+}
+.cl-hero__botones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+.cl-hero__botones .btn { flex: 1 1 220px; }
+@media (min-width: 900px) { .cl-hero__botones .btn { flex: 0 0 auto; } }
+.cl-hero__img { width: min(100%, 560px); margin: 0 auto; }
+
+.cl-perfiles { background: var(--noche); color: var(--crema); padding: 28px 0; }
+.cl-perfiles__lista { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
+.cl-perfiles__lista li {
+  font-family: var(--f-display); font-weight: 900; font-stretch: 70%; text-transform: uppercase;
+  font-size: clamp(2rem, 7vw, 4.4rem); line-height: 1;
+}
+.cl-perfiles__lista li:nth-child(2) { color: var(--azul); }
+
+.cl-creadores { background: var(--blanco); padding: 72px 0; }
+.cl-creadores__cabeza { margin-bottom: 32px; }
+.creadores { display: grid; gap: 20px; grid-template-columns: 1fr; }
+@media (min-width: 600px) { .creadores { grid-template-columns: repeat(auto-fill, minmax(240px, 320px)); } }
+.creador { display: grid; gap: 12px; align-content: start; }
+.creador__video {
+  width: 100%; max-width: 100%; aspect-ratio: 9 / 16; height: auto; object-fit: cover;
+  border-radius: var(--radio); background: var(--noche);
+}
+.creador__usuario {
+  font-family: var(--f-display); font-weight: 900; font-stretch: 80%; font-size: 1.5rem; color: var(--azul-osc);
+  text-decoration: none;
+}
+.creador__usuario:hover { text-decoration: underline; }
+.creador__texto p { margin-top: 4px; max-width: 40ch; }
+.creador__hueco {
+  aspect-ratio: 9 / 16; max-width: 100%; border-radius: var(--radio); border: 3px dashed var(--azul-osc);
+  display: grid; align-content: center; justify-items: start; gap: 12px; padding: 24px;
+}
+.creador__vacio-titulo {
+  font-family: var(--f-display); font-weight: 900; font-stretch: 70%; text-transform: uppercase;
+  font-size: clamp(2.2rem, 6vw, 3rem); line-height: .9; color: var(--azul-osc);
+}
+
+.cl-cierre { background: var(--azul); padding: 72px 0; }
+.cl-cierre__in { display: grid; gap: 24px; justify-items: start; }
+.cl-cierre .titulo { color: var(--blanco); max-width: 16ch; text-wrap: balance; }
+@media (max-width: 599px) { .creador__hueco { aspect-ratio: auto; } }
