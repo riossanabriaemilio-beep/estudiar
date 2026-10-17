@@ -56,7 +56,13 @@ Además corrí **axe-core** (reglas WCAG 2 A y AA) en 375 px y 1440 px: **0 viol
 ### Tono
 Voseo, frases cortas, sin exageraciones ni promesas. Ejemplos: "Terminás la rutina y tenés 15 g de proteína a mano. Sin licuadora, sin shaker." / "Vendelo en tu negocio".
 
-## Alfajor del inicio — versión 4 (actual)
+## Versión 5 — snack flotante y fotos mejoradas
+
+- **Snack**: la foto de estudio (`assets-sigma/snack-flotando.webp`) se separó en 9 capas (`img/snack/`): el paquete y 8 trocitos. El fondo amarillo se detectó por color; el contorno del paquete se marcó a mano porque los sellos metálicos amarillos se confunden con el fondo. La sección pasó a ser un panel ancho en **azul noche** (#0A1E33): el amarillo del paquete contrasta mucho más que sobre amarillo. Cada trozo tiene su propio movimiento en loop (CSS `@keyframes`, distinto desplazamiento, giro, duración y desfase), y el paquete se mece suave. Con "reducir movimiento" quedan quietos.
+- **Peso del snack**: 50 g, leído en el envase de la foto nueva ("Cont. Neto 50g").
+- **Fotos mejoradas**: Real-ESRGAN x4plus (modelo libre, corrido en CPU con ncnn, sin costo). Se aplicó a caja, máquina, balanza, gimnasio y Farmacity; salida a 1200 px de ancho en WebP. Las fotos del alfajor mordido y del snack ya venían en buena resolución y no se tocaron. Scripts en `tools/` (tienen rutas de mi entorno; hay que ajustarlas para correrlos en otra compu).
+
+## Alfajor del inicio — versión 4
 
 - Emilio mandó dos fotos de estudio del alfajor mordido (chocolate y blanco, `assets-sigma/alfajor-*-mordido.webp`). Se ven mucho mejor que cualquier modelo hecho por código, así que **el inicio pasó a usar esas fotos** y se sacó Three.js.
 - **Recorte**: el fondo celeste se sacó con un "chroma" por color (azul menos rojo) más un relleno desde los bordes, para no borrar brillos claros del baño blanco. Los bordes se suavizan y se les quita el reflejo celeste. Resultado: `img/alfajor-chocolate.webp` / `img/alfajor-blanco.webp` (1100 px) y versiones de 640 px para Sabores.

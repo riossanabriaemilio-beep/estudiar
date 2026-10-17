@@ -61,8 +61,10 @@ window.SIGMA_CONFIG = {
     sabor: "Queso parmesano",
     bajada: "Arroz + whey, sabor queso parmesano.",
     datos: ["15 g de proteína por paquete", "Fuente de fibra", "Sin gluten"],
-    peso: null, // [PENDIENTE] peso neto del paquete (no se lee bien en la foto)
-    imagen: "img/snack.webp",
+    peso: "50 g", // del envase: "Cont. Neto 50g"
+    imagen: "img/snack.webp", // foto vieja (ya no se usa en la sección)
+    // Composición flotante: paquete + trozos recortados de la foto de estudio (posiciones en % de la foto)
+    escena: { ancho: 1145, alto: 1374, piezas: [{"src": "img/snack/paquete.webp", "x": 3.76, "y": 12.59, "w": 88.38, "h": 76.2, "paquete": true}, {"src": "img/snack/trozo-1.webp", "x": 11.62, "y": 5.24, "w": 24.28, "h": 13.61, "dx": 10, "dy": -18, "rot": 8, "dur": 6.2, "delay": 0}, {"src": "img/snack/trozo-2.webp", "x": 82.97, "y": 37.77, "w": 16.51, "h": 16.23, "dx": -12, "dy": 16, "rot": -10, "dur": 5.4, "delay": -1.2}, {"src": "img/snack/trozo-3.webp", "x": 4.72, "y": 43.67, "w": 18.86, "h": 15.14, "dx": 14, "dy": -12, "rot": 12, "dur": 7.0, "delay": -2.5}, {"src": "img/snack/trozo-4.webp", "x": 67.69, "y": 77.29, "w": 26.81, "h": 13.1, "dx": -10, "dy": -14, "rot": -8, "dur": 5.8, "delay": -0.6}, {"src": "img/snack/trozo-5.webp", "x": 80.09, "y": 2.11, "w": 15.37, "h": 14.85, "dx": 8, "dy": 20, "rot": 10, "dur": 6.6, "delay": -3.1}, {"src": "img/snack/trozo-6.webp", "x": 79.83, "y": 23.94, "w": 15.72, "h": 13.17, "dx": -14, "dy": -10, "rot": -12, "dur": 5.0, "delay": -1.8}, {"src": "img/snack/trozo-7.webp", "x": 6.72, "y": 60.99, "w": 9.26, "h": 7.86, "dx": 6, "dy": -16, "rot": 14, "dur": 4.6, "delay": -2.2}, {"src": "img/snack/trozo-8.webp", "x": 9.61, "y": 30.64, "w": 8.3, "h": 8.01, "dx": -8, "dy": 12, "rot": -14, "dur": 4.2, "delay": -0.9}] },
     alt: "Paquete de Snack proteico Sigma de arroz y whey, sabor queso parmesano, con 15 g de proteína por paquete",
     // [PENDIENTE] link de compra del snack. Mientras tanto, consulta por Instagram.
     boton: { texto: "Consultar por Instagram", href: "https://ig.me/m/sigmafood.ar" },

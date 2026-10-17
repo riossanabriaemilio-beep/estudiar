@@ -5,7 +5,12 @@ Una web de una sola página para reemplazar el Linktree de @sigmafood.ar, pensad
 
 Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scroll horizontal, links correctos, el formulario arma bien el mail, el scroll no se traba sobre el alfajor en celular, el foco con teclado es visible y axe-core no encontró problemas de accesibilidad (WCAG A/AA). Capturas en `capturas/`.
 
-## Versión 4 (actual)
+## Versión 5 (actual)
+- **Snack con la foto de estudio nueva**: recorté el paquete y los 8 trocitos por separado y los puse sobre azul noche (contrasta con el amarillo). Los trocitos flotan en loop, cada uno con su ritmo, y el paquete se mece suave. Con "reducir movimiento" quedan quietos. Del envase sale el peso: **50 g**.
+- **Fotos mejoradas con IA**: caja, máquina, balanza, gimnasio y Farmacity pasaron por Real-ESRGAN (x4, gratis, corre en la compu) y quedaron en 1200 px de ancho. Bordes y texturas mucho más nítidos; las letras muy chicas (sellos) no se pueden recuperar.
+- Scripts en `tools/` (`mejorar-fotos.py`, `recortar-snack.py`).
+
+## Versión 4
 - **El inicio usa las fotos reales del alfajor mordido** (chocolate y blanco) que mandó Emilio. Les saqué el fondo celeste y quedaron sobre el azul de SIGMA con su sombra. El alfajor flota, se inclina en perspectiva con el mouse o el dedo, se acerca con el scroll y aparecen las etiquetas. El botón Chocolate/Blanco cambia la foto.
 - Las mismas fotos se usan en Sabores, en Collabs y en la imagen para compartir el link.
 - **Se sacó el 3D hecho con código** (Three.js): la página carga más rápido. Las versiones 3D quedaron en el historial de git.
@@ -45,10 +50,10 @@ Hasta la versión 3 se usó la **Opción A**: alfajor hecho con código en Three
 
 ## Pendiente
 - **Confirmar que @doiverpichhh es el chico del video** y conseguir videos o usuarios de otros creadores (hoy hay uno solo).
-- **Snack**: peso neto, dónde se vende y una foto en buena resolución.
+- **Snack**: dónde se vende (el botón hoy abre un DM de Instagram).
 - **Tabla nutricional**: solo figura "Proteínas 15 g". Faltan calorías, carbohidratos, grasas (totales, saturadas, trans), fibra y sodio, sacados del envase.
 - **WhatsApp de la marca** y **tu número de WhatsApp** (los botones aparecen solos cuando los cargues).
-- **Fotos en alta resolución**: las que llegaron miden ~450–590 px y en escritorio se nota.
+- **Fotos originales**: las mejoré con IA, pero los archivos originales de la marca siempre van a verse mejor.
 - **Fotos de eventos y collabs** para Comunidad (hoy usa fotos de producto).
 - **Logo oficial en SVG** (hoy el wordmark es texto en Archivo 900).
 - **Qué tienda vende el sabor Blanco**, para que el botón de ese sabor vaya directo.

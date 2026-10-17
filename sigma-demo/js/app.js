@@ -96,9 +96,15 @@
           '<p class="sabor__bajada">' + esc(K.bajada) + "</p>" +
           '<ul class="sabor__lista">' + K.datos.map(function (d) { return "<li>" + esc(d) + "</li>"; }).join("") +
             (K.peso ? "<li>" + esc(K.peso) + "</li>" : "") + "</ul>" +
-          '<a class="btn btn--noche" href="' + esc(K.boton.href) + '"' + ext(K.boton.href) + ">" + esc(K.boton.texto) + "</a>" +
+          '<a class="btn btn--amarillo" href="' + esc(K.boton.href) + '"' + ext(K.boton.href) + ">" + esc(K.boton.texto) + "</a>" +
         "</div>" +
-        '<img class="sabor__img sabor__img--foto" src="' + esc(K.imagen) + '" alt="' + esc(K.alt) + '" loading="lazy" width="300" height="307">';
+        '<div class="snack-escena" role="img" aria-label="' + esc(K.alt) + '" style="aspect-ratio:' + K.escena.ancho + "/" + K.escena.alto + '">' +
+          K.escena.piezas.map(function (p) {
+            var st = "left:" + p.x + "%;top:" + p.y + "%;width:" + p.w + "%;";
+            if (!p.paquete) st += "--dx:" + p.dx + "px;--dy:" + p.dy + "px;--rot:" + p.rot + "deg;--dur:" + p.dur + "s;--delay:" + p.delay + "s;";
+            return '<img class="' + (p.paquete ? "snack-escena__paquete" : "snack-escena__trozo") + '" src="' + esc(p.src) + '" alt="" loading="lazy" style="' + st + '">';
+          }).join("") +
+        "</div>";
       sg.appendChild(art);
     }
   });

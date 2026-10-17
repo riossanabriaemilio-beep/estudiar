@@ -232,13 +232,10 @@ ul { margin: 0; padding: 0; list-style: none; }
 .sabores__grid { display: grid; }
 @media (min-width: 768px) {
   .sabores__grid { grid-template-columns: 1fr 1fr; }
-  .sabor--snack { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; align-items: center; gap: 32px; }
-  .sabor--snack .sabor__img { margin: 0; }
+  .sabor--snack { grid-template-columns: 1fr 1.1fr; align-items: center; gap: 40px; }
 }
 @media (min-width: 1200px) {
-  .sabores__grid { grid-template-columns: 1fr 1fr 1fr; }
-  .sabor--snack { grid-column: auto; grid-template-columns: none; gap: 0; }
-  .sabor--snack .sabor__img { margin: 8px auto 0; }
+  .sabor--snack { padding: 72px 72px; }
 }
 .sabor {
   position: relative; display: grid; grid-template-rows: auto auto; align-content: start;
@@ -246,7 +243,34 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .sabor--chocolate { background: var(--choco); color: var(--crema); }
 .sabor--blanco { background: var(--crema); color: var(--noche); }
-.sabor--snack { background: var(--amarillo); color: var(--noche); }
+/* Snack: panel ancho en azul noche, contrasta con el amarillo del paquete */
+.sabor--snack { grid-column: 1 / -1; background: var(--noche); color: var(--crema); overflow: hidden; }
+.sabor--snack .sabor__nombre { color: var(--amarillo); }
+.sabor--snack .sabor__lista li { border-color: var(--amarillo); color: var(--crema); }
+.sabor--snack .sabor__lista li:first-child { background: var(--amarillo); color: var(--noche); }
+.btn--amarillo { background: var(--amarillo); color: var(--noche); }
+.btn--amarillo:hover { background: #f7d257; }
+.sabor--snack :focus-visible { outline-color: var(--amarillo); }
+.snack-escena { position: relative; width: min(100%, 560px); max-width: 100%; margin: 28px auto 0; }
+.snack-escena img { position: absolute; height: auto; max-width: none; }
+.snack-escena__paquete {
+  z-index: 1; filter: drop-shadow(0 30px 34px rgba(0, 0, 0, .45));
+  animation: snack-paquete 6s ease-in-out infinite;
+}
+.snack-escena__trozo {
+  z-index: 2; filter: drop-shadow(0 14px 14px rgba(0, 0, 0, .35));
+  animation: snack-trozo var(--dur, 6s) ease-in-out var(--delay, 0s) infinite;
+}
+@keyframes snack-paquete {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(-1.2deg); }
+}
+@keyframes snack-trozo {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); }
+}
+@media (min-width: 768px) { .snack-escena { margin: 0 auto; } }
+@media (prefers-reduced-motion: reduce) { .snack-escena img { animation: none !important; } }
 .sabor__tipo { font-weight: 600; font-size: .95rem; margin-bottom: 6px; }
 .sabor__lista { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 22px; }
 .sabor__lista li {
@@ -254,7 +278,7 @@ ul { margin: 0; padding: 0; list-style: none; }
   border: 2px solid var(--noche);
 }
 .sabor__lista li:first-child { background: var(--noche); color: var(--blanco); }
-.sabor__img--foto { aspect-ratio: auto; border-radius: var(--radio); object-fit: cover; width: min(100%, 420px); box-shadow: 0 18px 40px rgba(10, 30, 51, .25); }
+
 .sabor__nombre {
   font-family: var(--f-display); font-weight: 900; font-stretch: 70%;
   font-size: clamp(3rem, 8vw, 5.4rem); line-height: .85; text-transform: uppercase; text-wrap: balance;
