@@ -83,7 +83,7 @@
           '<p class="sabor__dato"><strong>15 g</strong> de proteína · 63 g</p>' +
           '<a class="btn ' + (s.id === "blanco" ? "btn--noche" : "btn--crema") + '" href="' + esc(s.boton.href) + '">' + esc(s.boton.texto) + "</a>" +
         "</div>" +
-        '<img class="sabor__img" src="' + esc(s.imagen) + '" alt="' + esc(s.alt) + '" loading="lazy" width="800" height="800">';
+        '<img class="sabor__img sabor__img--alfajor" src="' + esc(s.imagen) + '" alt="' + esc(s.alt) + '" loading="lazy" width="640" height="483">';
       sg.appendChild(art);
     });
     var K = C.snack;

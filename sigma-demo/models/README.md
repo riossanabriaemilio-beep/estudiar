@@ -1,5 +1,5 @@
 # models/
 
-Vacía a propósito. El alfajor 3D se arma con código en `js/alfajor3d.js` (Three.js), así que no hay archivo de modelo que descargar: pesa 0 KB extra.
+Vacía. El inicio usa las fotos reales del alfajor mordido (`img/alfajor-chocolate.webp` y `img/alfajor-blanco.webp`), recortadas y animadas con CSS + JavaScript, sin modelo 3D.
 
-Si en el futuro se genera un modelo GLB a partir de una foto limpia del alfajor (Opción B), va acá y tiene que pesar menos de 2 MB.
+Las versiones anteriores del alfajor 3D hecho con código (Three.js) quedaron en el historial de git, en los commits "SIGMA v2" y "SIGMA v3".

@@ -56,7 +56,15 @@ Además corrí **axe-core** (reglas WCAG 2 A y AA) en 375 px y 1440 px: **0 viol
 ### Tono
 Voseo, frases cortas, sin exageraciones ni promesas. Ejemplos: "Terminás la rutina y tenés 15 g de proteína a mano. Sin licuadora, sin shaker." / "Vendelo en tu negocio".
 
-## Alfajor 3D
+## Alfajor del inicio — versión 4 (actual)
+
+- Emilio mandó dos fotos de estudio del alfajor mordido (chocolate y blanco, `assets-sigma/alfajor-*-mordido.webp`). Se ven mucho mejor que cualquier modelo hecho por código, así que **el inicio pasó a usar esas fotos** y se sacó Three.js.
+- **Recorte**: el fondo celeste se sacó con un "chroma" por color (azul menos rojo) más un relleno desde los bordes, para no borrar brillos claros del baño blanco. Los bordes se suavizan y se les quita el reflejo celeste. Resultado: `img/alfajor-chocolate.webp` / `img/alfajor-blanco.webp` (1100 px) y versiones de 640 px para Sabores.
+- **Movimiento** (`js/hero.js`, sin librerías): flota, se inclina en perspectiva con el mouse (o con arrastre horizontal en celular, sin trabar el scroll), se acerca con el scroll y aparecen las 4 etiquetas. Sombra en el piso que acompaña la flotación. Solo se anima cuando el inicio está en pantalla.
+- Con "reducir movimiento" queda quieto y las etiquetas se ven siempre.
+- Nota: las fotos no muestran el envase ni el logo; son del producto.
+
+## Alfajor 3D (versiones 1 a 3, ya no se usan)
 
 > **Versión 2 (rediseño pedido por Emilio):** la primera versión (dos tapas separadas con el relleno a la vista, la tapa se levantaba) se veía muy básica. Se rehízo copiando el alfajor de la foto del envase (`assets-sigma/alfajor-corte.png`):
 > - **Bañado entero** en chocolate: un solo cuerpo alto y redondeado (perfil "superelipse", la base más plana que la tapa), con ondas suaves en el baño.

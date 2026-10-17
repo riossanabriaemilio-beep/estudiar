@@ -4,7 +4,7 @@ Propuesta de web para SIGMA (alfajor proteico). HTML + CSS + JavaScript, sin bui
 
 ## Abrirla en tu compu
 
-El 3D usa módulos de JavaScript, así que **no la abras con doble clic** (el navegador lo bloquea). Levantá un servidor local desde la carpeta:
+Conviene abrirla con un servidor local (con doble clic algunos navegadores bloquean partes). Desde la carpeta:
 
 ```bash
 cd sigma-demo
@@ -15,9 +15,9 @@ y entrá a **http://localhost:8080**
 
 Si no tenés Python pero sí Node: `npx serve .` (y abrí la dirección que te muestra).
 
-Necesitás internet: Three.js, GSAP y las fuentes se cargan desde CDN.
+Necesitás internet: GSAP y las fuentes se cargan desde CDN.
 
-Para ver la versión sin 3D (la que ven los celulares lentos o quien tiene "reducir movimiento" activado): **http://localhost:8080/?estatico=1**
+Para ver la versión quieta (la que ve quien tiene "reducir movimiento" activado): **http://localhost:8080/?estatico=1**
 
 ## Subirla a Netlify
 
@@ -52,7 +52,7 @@ Todo está en **`js/config.js`**. Editás, guardás y recargás.
 - **Collabs** → `collabs` (textos, link de DM y lista de creadores con su video).
 
 Colores y tipografías: variables al principio de `css/styles.css`.
-El alfajor 3D: `js/alfajor3d.js` (colores de los baños en `SABORES`).
+El alfajor del inicio: `js/hero.js` (inclinación, flotación y scroll). Las fotos recortadas están en `img/alfajor-chocolate.webp` y `img/alfajor-blanco.webp`.
 
 ## Estructura
 
@@ -64,9 +64,9 @@ sigma-demo/
 ├── css/styles.css
 ├── js/config.js      ← textos, links, sabores, nutrición, contacto
 ├── js/app.js         ← arma la página desde config.js
-├── js/alfajor3d.js   ← alfajor 3D (Three.js)
+├── js/hero.js        ← alfajor del inicio (fotos que se inclinan y flotan)
 ├── img/              ← fotos WebP, renders, imagen para compartir
-├── models/           ← vacía (el 3D está hecho con código)
+├── models/           ← vacía (ya no se usa modelo 3D)
 ├── capturas/         ← capturas de prueba en 375, 768 y 1440 px
 ├── assets-sigma/     ← fotos originales que pasó la marca
 ├── robots.txt, _headers

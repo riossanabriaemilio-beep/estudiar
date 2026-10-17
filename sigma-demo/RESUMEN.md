@@ -1,9 +1,14 @@
 # Resumen — Web demo SIGMA
 
 ## Qué hice
-Una web de una sola página para reemplazar el Linktree de @sigmafood.ar, pensada para el celular. Arranca con un alfajor 3D que gira y se abre al hacer scroll mostrando lo que tiene adentro. Después: sabores, tabla con estética de envase, cuándo comerlo, las 3 tiendas con su link, formulario de mayoristas que arma el mail, comunidad, preguntas frecuentes y pie con tu firma. Todo el contenido se edita en `js/config.js`. No está publicada.
+Una web de una sola página para reemplazar el Linktree de @sigmafood.ar, pensada para el celular. Arranca con la foto del alfajor mordido, que flota, se inclina con el dedo o el mouse y muestra lo que tiene adentro al hacer scroll. Después: sabores, tabla con estética de envase, cuándo comerlo, las 3 tiendas con su link, formulario de mayoristas que arma el mail, comunidad, preguntas frecuentes y pie con tu firma. Todo el contenido se edita en `js/config.js`. No está publicada.
 
-Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scroll horizontal, links correctos, el formulario arma bien el mail, el scroll no se traba sobre el 3D en celular, el foco con teclado es visible y axe-core no encontró problemas de accesibilidad (WCAG A/AA). Capturas en `capturas/`.
+Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scroll horizontal, links correctos, el formulario arma bien el mail, el scroll no se traba sobre el alfajor en celular, el foco con teclado es visible y axe-core no encontró problemas de accesibilidad (WCAG A/AA). Capturas en `capturas/`.
+
+## Versión 4 (actual)
+- **El inicio usa las fotos reales del alfajor mordido** (chocolate y blanco) que mandó Emilio. Les saqué el fondo celeste y quedaron sobre el azul de SIGMA con su sombra. El alfajor flota, se inclina en perspectiva con el mouse o el dedo, se acerca con el scroll y aparecen las etiquetas. El botón Chocolate/Blanco cambia la foto.
+- Las mismas fotos se usan en Sabores, en Collabs y en la imagen para compartir el link.
+- **Se sacó el 3D hecho con código** (Three.js): la página carga más rápido. Las versiones 3D quedaron en el historial de git.
 
 ## Versión 2
 - **Alfajor 3D rehecho** copiando la foto del envase: bañado entero, alto y redondeado. Al hacer scroll se parte y muestra el corte (galletita de cacao con maní, relleno, galletita).
@@ -30,12 +35,12 @@ Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scro
 - Títulos y wordmark: **Archivo** 900, condensada (Google Fonts)
 - Texto: **Inter** 400–700 (Google Fonts)
 
-## 3D
-**Quedó la Opción A**: alfajor hecho con código en Three.js (0 KB de modelo). No hice la Opción B porque no había una foto limpia del alfajor solo: todas muestran el envase, y generar un 3D desde ahí pondría el logo en un objeto inventado. En celulares lentos o con "reducir movimiento" se muestra una imagen fija del alfajor abierto con las etiquetas.
+## 3D (historial)
+Hasta la versión 3 se usó la **Opción A**: alfajor hecho con código en Three.js (0 KB de modelo). No hice la Opción B porque no había una foto limpia del alfajor solo: todas muestran el envase, y generar un 3D desde ahí pondría el logo en un objeto inventado. En celulares lentos o con "reducir movimiento" se muestra una imagen fija del alfajor abierto con las etiquetas.
 
 ## Imágenes
 - 5 fotos de la marca (las que mandaste), en WebP. A la de Farmacity le recorté la flecha del carrusel de Instagram.
-- Renders del alfajor 3D de la propia web (sin envase ni logo) para sabores, imagen fija e imagen para compartir.
+- **Fotos del alfajor mordido** (chocolate y blanco) que mandó Emilio, recortadas sin fondo: `img/alfajor-*.webp`. Originales en `assets-sigma/`.
 - **Higgsfield: no lo usé. 0 créditos.**
 
 ## Pendiente
