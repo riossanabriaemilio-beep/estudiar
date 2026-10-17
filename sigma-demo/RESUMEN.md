@@ -5,7 +5,11 @@ Una web de una sola página para reemplazar el Linktree de @sigmafood.ar, pensad
 
 Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scroll horizontal, links correctos, el formulario arma bien el mail, el scroll no se traba sobre el alfajor en celular, el foco con teclado es visible y axe-core no encontró problemas de accesibilidad (WCAG A/AA). Capturas en `capturas/`.
 
-## Versión 10 (actual)
+## Versión 11 (actual)
+- **Inicio solo con el título**: se sacó la frase "Alfajor con 15 g de proteína…" (sigue en `config.js` por si se quiere volver a usar). Título más grande en celular y en computadora (en computadora se ajusta también al alto de la pantalla para que entre completo).
+- **Etiquetas en celular**: grilla de 2 × 2, todas del mismo ancho, debajo del paquete.
+
+## Versión 10
 - **Inicio en celular más despejado**: el paquete queda centrado y las 4 etiquetas van en una fila debajo (no encima del paquete); más aire alrededor del título y los botones, que no se parten en dos renglones. Probado de 320 a 414 px.
 - **Botón flotante**: aparece recién cuando se deja atrás el inicio, así no tapa el paquete ni las etiquetas.
 
