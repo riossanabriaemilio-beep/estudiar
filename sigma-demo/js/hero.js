@@ -18,21 +18,47 @@
   var clamp = function (v, a, b) { return Math.min(b, Math.max(a, v)); };
   var smooth = function (a, b, v) { var t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 
-  /* Sabor */
+  /* Sabor: los paquetes van alternando solos; el botón elige uno a mano */
   var fotos = tilt.querySelectorAll(".alfajor__foto");
-  document.querySelectorAll(".sabor-toggle button").forEach(function (b) {
+  var botones = document.querySelectorAll(".sabor-toggle button");
+  var actual = "chocolate";
+  function mostrar(sabor) {
+    if (sabor === actual) return;
+    actual = sabor;
+    botones.forEach(function (o) { o.setAttribute("aria-pressed", String(o.getAttribute("data-sabor") === sabor)); });
+    fotos.forEach(function (f) {
+      var activa = f.getAttribute("data-sabor") === sabor;
+      f.classList.toggle("activa", activa);
+      if (activa) f.removeAttribute("aria-hidden"); else f.setAttribute("aria-hidden", "true");
+    });
+    giroCambio = 1;
+  }
+  var giroCambio = 0;
+  var autoTimer = null, pausaHasta = 0;
+  function programar() {
+    clearTimeout(autoTimer);
+    autoTimer = setTimeout(function () {
+      if (Date.now() >= pausaHasta && !document.hidden) mostrar(actual === "chocolate" ? "blanco" : "chocolate");
+      programar();
+    }, 3800);
+  }
+  botones.forEach(function (b) {
     b.addEventListener("click", function () {
-      var sabor = b.getAttribute("data-sabor");
-      document.querySelectorAll(".sabor-toggle button").forEach(function (o) { o.setAttribute("aria-pressed", String(o === b)); });
-      fotos.forEach(function (f) {
-        var activa = f.getAttribute("data-sabor") === sabor;
-        f.classList.toggle("activa", activa);
-        if (activa) f.removeAttribute("aria-hidden"); else f.setAttribute("aria-hidden", "true");
-      });
+      pausaHasta = Date.now() + 10000;   // si el usuario elige, esperamos antes de seguir alternando
+      mostrar(b.getAttribute("data-sabor"));
     });
   });
 
-  if (!raiz.classList.contains("modo-anim")) return; // quieto
+  if (!raiz.classList.contains("modo-anim")) return; // quieto (sin alternar solo)
+  programar();
+  // pausa mientras el mouse o el foco están sobre el paquete o los botones
+  [stage, document.querySelector(".sabor-toggle")].forEach(function (z) {
+    if (!z) return;
+    z.addEventListener("mouseenter", function () { pausaHasta = Infinity; });
+    z.addEventListener("mouseleave", function () { pausaHasta = Date.now() + 1500; });
+    z.addEventListener("focusin", function () { pausaHasta = Infinity; });
+    z.addEventListener("focusout", function () { pausaHasta = Date.now() + 1500; });
+  });
 
   /* Inclinación con mouse o dedo */
   var objX = 0, objY = 0, rx = 0, ry = 0;
@@ -77,10 +103,11 @@
     var flota = Math.sin(seg * 1.3) * 8;                 // px
     var balanceo = Math.sin(seg * 0.6) * 4 * (1 - abierto); // grados
     var escala = 1 + 0.1 * abierto;
-    var giroZ = -5 * (1 - abierto) + 2 * abierto;
+    var giroZ = -4 * (1 - abierto) + 2 * abierto;
+    giroCambio *= Math.pow(0.02, dt);                  // pequeño giro al cambiar de paquete
     tilt.style.transform =
       "translateY(" + (flota - 10 * abierto).toFixed(2) + "px) " +
-      "rotateX(" + (rx + 6).toFixed(2) + "deg) rotateY(" + (ry + balanceo).toFixed(2) + "deg) " +
+      "rotateX(" + (rx + 6).toFixed(2) + "deg) rotateY(" + (ry + balanceo + 25 * giroCambio).toFixed(2) + "deg) " +
       "rotateZ(" + giroZ.toFixed(2) + "deg) scale(" + escala.toFixed(3) + ")";
     stage.style.setProperty("--flota", (flota / 8).toFixed(3));
     etiquetas.style.setProperty("--abierto", smooth(0.5, 0.95, abierto).toFixed(3));

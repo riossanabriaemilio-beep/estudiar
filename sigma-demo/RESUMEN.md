@@ -5,7 +5,12 @@ Una web de una sola página para reemplazar el Linktree de @sigmafood.ar, pensad
 
 Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scroll horizontal, links correctos, el formulario arma bien el mail, el scroll no se traba sobre el alfajor en celular, el foco con teclado es visible y axe-core no encontró problemas de accesibilidad (WCAG A/AA). Capturas en `capturas/`.
 
-## Versión 5 (actual)
+## Versión 6 (actual)
+- **El inicio muestra los paquetes** de chocolate y blanco, que se van alternando solos cada ~4 segundos con un fundido y un giro suave. Siguen flotando y se inclinan con el mouse o el dedo. El botón Chocolate/Blanco elige uno a mano (y frena el cambio automático unos segundos). El cambio se pausa con el mouse o el foco encima, y con "reducir movimiento" no alterna solo.
+- Paquete blanco: la foto venía chica (326 px) y con un sticker "Nuevo sabor" encima. La agrandé con IA y rehice la esquina tapada copiando la del otro lado. La letra chica no se puede recuperar: conviene pedir la foto original a la marca.
+- La sección Sabores sigue con las fotos del alfajor mordido.
+
+## Versión 5
 - **Snack con la foto de estudio nueva**: recorté el paquete y los 8 trocitos por separado sobre el amarillo de la foto de estudio. Los trocitos flotan en loop, cada uno con su ritmo, y el paquete se mece suave. Con "reducir movimiento" quedan quietos. Del envase sale el peso: **50 g**.
 - **Fotos mejoradas con IA**: caja, máquina, balanza, gimnasio y Farmacity pasaron por Real-ESRGAN (x4, gratis, corre en la compu) y quedaron en 1200 px de ancho. Bordes y texturas mucho más nítidos; las letras muy chicas (sellos) no se pueden recuperar.
 - Scripts en `tools/` (`mejorar-fotos.py`, `recortar-snack.py`).
@@ -50,6 +55,7 @@ Hasta la versión 3 se usó la **Opción A**: alfajor hecho con código en Three
 
 ## Pendiente
 - **Confirmar que @doiverpichhh es el chico del video** y conseguir videos o usuarios de otros creadores (hoy hay uno solo).
+- **Foto del paquete blanco en buena resolución** (la actual es una captura chica, agrandada con IA).
 - **Snack**: dónde se vende (el botón hoy abre un DM de Instagram).
 - **Tabla nutricional**: solo figura "Proteínas 15 g". Faltan calorías, carbohidratos, grasas (totales, saturadas, trans), fibra y sodio, sacados del envase.
 - **WhatsApp de la marca** y **tu número de WhatsApp** (los botones aparecen solos cuando los cargues).
