@@ -97,7 +97,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* 1. Header */
 .header {
-  position: sticky; top: 0; z-index: 50;
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
   background: var(--azul);
   border-bottom: 1px solid rgba(10, 30, 51, .14);
 }
