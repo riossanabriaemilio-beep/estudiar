@@ -50,7 +50,7 @@ Todo está en **`js/config.js`**. Editás, guardás y recargás.
 - **Fotos de Comunidad** → `comunidad.fotos` (de 3 a 6). Poné las fotos en `img/` en formato WebP.
 - **Preguntas frecuentes** → `faq`.
 - **Snack** → `snack` (sabor, datos, peso, foto, botón).
-- **Collabs** → `collabs` (textos, link de DM y lista de creadores con su video).
+- **Collabs** → `collabs` (textos, link de DM, lista de creadores con su video y `eventos` como UFA Winter).
 
 Colores y tipografías: variables al principio de `css/styles.css`.
 El alfajor del inicio: `js/hero.js` (inclinación, flotación y scroll). Las fotos recortadas están en `img/alfajor-chocolate.webp` y `img/alfajor-blanco.webp`.

@@ -208,6 +208,20 @@ window.SIGMA_CONFIG = {
       },
       // Para sumar otro creador, copiá el bloque de arriba y cambiá los datos.
     ],
+    // Eventos donde estuvo la marca (página Collabs)
+    eventos: [
+      {
+        nombre: "UFA Winter",
+        detalle: "Ultimate Fitness Awards · Winter Edition",
+        fecha: "6 de septiembre", // del flyer del evento
+        texto: "Sí o sí teníamos que estar. Una opción rica y práctica de proteína en el evento.",
+        imagen: "img/ufa-winter.webp",
+        alt: "Flyer de UFA Winter con un estandarte de SIGMA, 6 de septiembre",
+        video: "video/ufa-winter.mp4",
+        videoWebm: "video/ufa-winter.webm",
+        poster: "img/ufa-winter-poster.webp",
+      },
+    ],
   },
 
   // Botón flotante de abajo a la derecha (el paquete del alfajor).

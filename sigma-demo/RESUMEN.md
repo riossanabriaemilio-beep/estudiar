@@ -5,7 +5,10 @@ Una web de una sola página para reemplazar el Linktree de @sigmafood.ar, pensad
 
 Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scroll horizontal, links correctos, el formulario arma bien el mail, el scroll no se traba sobre el alfajor en celular, el foco con teclado es visible y axe-core no encontró problemas de accesibilidad (WCAG A/AA). Capturas en `capturas/`.
 
-## Versión 8 (actual)
+## Versión 9 (actual)
+- **Collabs → Eventos: UFA Winter** (Ultimate Fitness Awards, Winter Edition, 6 de septiembre). Flyer del evento con los íconos de Instagram borrados (foto de perfil, botón violeta e ícono de usuario) y mejorado con IA; al lado, el reel del evento (MP4 + WebM, 35 s) con portada del paquete en la mano. Se cargan en `config.js` → `collabs.eventos`.
+
+## Versión 8
 - **Inicio sin efectos de scroll**: antes el inicio quedaba "pegado" mientras se bajaba y el paquete se agrandaba con el scroll, lo que se veía como un error. Ahora el inicio se ve siempre igual (paquete + las 4 etiquetas) y el paquete solo cambia de chocolate a blanco **por tiempo**.
 - **Ícono de la pestaña**: el paquete de chocolate (`img/favicon-*.png`, `favicon.ico` y el ícono para iPhone), en lugar de la "S".
 

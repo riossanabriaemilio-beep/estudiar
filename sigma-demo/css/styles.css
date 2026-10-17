@@ -546,3 +546,22 @@ a.flotante:hover .flotante__circulo { transform: scale(1.06); }
 .btn--borde-claro:hover { background: rgba(244, 237, 220, .1); }
 .cookies :focus-visible { outline-color: var(--crema); }
 @media (prefers-reduced-motion: reduce) { .flotante__circulo { animation: none; } }
+
+/* ---------- Collabs: eventos ---------- */
+.cl-eventos { background: var(--noche); color: var(--crema); padding: 72px 0; }
+.cl-eventos .titulo { color: var(--azul); margin-bottom: 32px; }
+.evento { display: grid; gap: 24px; align-items: start; }
+@media (min-width: 900px) { .evento { grid-template-columns: 1fr 1fr; gap: 48px; } }
+.evento__flyer { width: 100%; max-width: 520px; border-radius: var(--radio); box-shadow: 0 20px 40px rgba(0, 0, 0, .4); }
+.evento__info { display: grid; gap: 10px; min-width: 0; }
+.evento__fecha { font-weight: 700; color: var(--azul); }
+.evento__nombre {
+  font-family: var(--f-display); font-weight: 900; font-stretch: 70%; text-transform: uppercase;
+  font-size: clamp(2.6rem, 8vw, 4.6rem); line-height: .9; color: var(--blanco);
+}
+.evento__detalle { font-weight: 600; }
+.evento__info p:not([class]) { max-width: 44ch; }
+.evento__video {
+  margin-top: 12px; width: min(100%, 320px); aspect-ratio: 9 / 16; height: auto; object-fit: cover;
+  border-radius: var(--radio); background: #000;
+}

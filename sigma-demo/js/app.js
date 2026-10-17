@@ -263,6 +263,24 @@
     });
   }
 
+  /* Eventos (página Collabs) */
+  si("eventos-lista", function (n) {
+    var EV = (C.collabs && C.collabs.eventos) || [];
+    n.innerHTML = EV.map(function (e) {
+      return '<article class="evento">' +
+        '<img class="evento__flyer" src="' + esc(e.imagen) + '" alt="' + esc(e.alt) + '" loading="lazy" width="1000" height="1236">' +
+        '<div class="evento__info">' +
+          '<p class="evento__fecha">' + esc(e.fecha) + "</p>" +
+          '<h3 class="evento__nombre">' + esc(e.nombre) + "</h3>" +
+          '<p class="evento__detalle">' + esc(e.detalle) + "</p>" +
+          "<p>" + esc(e.texto) + "</p>" +
+          (e.video ? '<video class="evento__video" controls playsinline preload="none" poster="' + esc(e.poster) + '" width="540" height="960" aria-label="Video de SIGMA en ' + esc(e.nombre) + '">' +
+            (e.videoWebm ? '<source src="' + esc(e.videoWebm) + '" type="video/webm">' : "") +
+            '<source src="' + esc(e.video) + '" type="video/mp4"></video>' : "") +
+        "</div></article>";
+    }).join("");
+  });
+
   /* 10. Pie */
   si("pie-frase", function (n) { n.textContent = C.marca.frase; });
   si("pie-contacto", function (pc) {
