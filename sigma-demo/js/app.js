@@ -312,6 +312,14 @@
     cont.innerHTML = '<span class="flotante__circulo"><img src="' + esc(B.imagen) + '" alt="" width="143" height="180"></span>' +
       (num ? '<span class="flotante__texto">' + esc(B.texto) + "</span>" : "");
     document.body.appendChild(cont);
+    // en la página principal aparece recién cuando se deja atrás el inicio (para no taparlo)
+    var hero = document.getElementById("inicio");
+    if (hero && "IntersectionObserver" in window) {
+      cont.classList.add("oculto");
+      new IntersectionObserver(function (ents) {
+        cont.classList.toggle("oculto", ents[0].intersectionRatio > 0.35);
+      }, { threshold: [0, 0.35, 1] }).observe(hero);
+    }
   })();
 
   /* Aviso de cookies: se guarda la elección en el navegador */

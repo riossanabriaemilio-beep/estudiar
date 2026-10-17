@@ -221,9 +221,30 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 @media (max-width: 899px) {
   .hero__texto { text-align: left; }
+  /* celular: más aire, paquete centrado y etiquetas en fila debajo (no encima del paquete) */
+  .hero__escena { padding-top: 36px; padding-bottom: 32px; gap: 28px; grid-template-rows: auto auto; min-height: 0; }
+  .hero__escena { grid-template-columns: minmax(0, 1fr); }
+  .hero__texto { min-width: 0; }
+  .hero__titulo { font-size: clamp(1.9rem, 9.6vw, 3.4rem); line-height: .92; }
+  .hero__sub { margin-top: 18px; }
+  .hero__botones { margin-top: 24px; flex-wrap: nowrap; }
+  .hero__botones .btn { flex: 1 1 0; min-width: 0; white-space: nowrap; padding: 0 14px; font-size: .98rem; }
+  .sabor-toggle { margin-top: 20px; }
+  .alfajor { height: min(118vw, 520px); min-height: 0; }
+  .alfajor__tilt { inset: 0 12% 84px 12%; }
+  .alfajor__sombra { bottom: 70px; left: 26%; right: 26%; height: 5%; }
+  .etiquetas {
+    inset: auto 0 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+  }
+  .etiqueta { position: static; }
+  .etiqueta span { font-size: .9rem; padding: 7px 12px; }
 }
 @media (max-width: 380px) {
-  .hero__botones .btn { min-height: 48px; padding: 0 16px; }
+  .hero__botones .btn { min-height: 48px; padding: 0 12px; font-size: .92rem; }
+}
+@media (max-width: 340px) {
+  .hero__botones { flex-wrap: wrap; }
+  .hero__botones .btn { flex-basis: 100%; }
 }
 
 /* 3. Sabores */
@@ -506,8 +527,9 @@ ul { margin: 0; padding: 0; list-style: none; }
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   display: flex; align-items: center; gap: 10px; flex-direction: row-reverse;
   text-decoration: none; color: var(--noche);
-  transition: bottom .3s ease;
+  transition: bottom .3s ease, opacity .3s ease, transform .3s ease;
 }
+.flotante.oculto { opacity: 0; transform: translateY(12px); pointer-events: none; visibility: hidden; }
 .flotante__circulo {
   width: 64px; display: block;
   animation: flotante-mece 3.2s ease-in-out infinite;
