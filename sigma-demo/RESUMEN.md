@@ -5,7 +5,10 @@ Una web de una sola página para reemplazar el Linktree de @sigmafood.ar, pensad
 
 Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scroll horizontal, links correctos, el formulario arma bien el mail, el scroll no se traba sobre el alfajor en celular, el foco con teclado es visible y axe-core no encontró problemas de accesibilidad (WCAG A/AA). Capturas en `capturas/`.
 
-## Versión 11 (actual)
+## Versión 12 (actual)
+- **Etiquetas en celular → cinta en loop**: franja azul noche inclinada que corre de lado a lado debajo del paquete ("15 g de proteína · Manteca de maní · Whey · Miel y chocolate"). Con "reducir movimiento" queda quieta. En computadora las etiquetas siguen alrededor del paquete.
+
+## Versión 11
 - **Inicio solo con el título**: se sacó la frase "Alfajor con 15 g de proteína…" (sigue en `config.js` por si se quiere volver a usar). Título más grande en celular y en computadora (en computadora se ajusta también al alto de la pantalla para que entre completo).
 - **Etiquetas en celular**: grilla de 2 × 2, todas del mismo ancho, debajo del paquete.
 

@@ -147,7 +147,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 
 /* 2. Inicio con alfajor 3D */
-.hero { background: var(--azul); position: relative; }
+.hero { background: var(--azul); position: relative; overflow: hidden; overflow: clip; }
 .hero__escena {
   min-height: calc(100svh - var(--header-h));
   display: grid; grid-template-rows: auto 1fr; gap: 8px;
@@ -227,19 +227,16 @@ ul { margin: 0; padding: 0; list-style: none; }
   .hero__texto { min-width: 0; }
   .hero__titulo { font-size: clamp(2.3rem, 11.6vw, 4rem); line-height: .9; }
   .hero__botones { margin-top: 28px; flex-wrap: nowrap; }
-  .alfajor { height: min(128vw, 560px); }
+  .alfajor { height: min(112vw, 500px); }
+  .hero__escena { padding-bottom: 8px; }
+
   .hero__botones .btn { flex: 1 1 0; min-width: 0; white-space: nowrap; padding: 0 14px; font-size: .98rem; }
   .sabor-toggle { margin-top: 20px; }
   .alfajor { height: min(118vw, 520px); min-height: 0; }
-  .alfajor__tilt { inset: 0 12% 112px 12%; }
-  .alfajor__sombra { bottom: 98px; left: 26%; right: 26%; height: 5%; }
-  /* etiquetas: grilla de 2 x 2, todas del mismo ancho */
-  .etiquetas {
-    inset: auto 0 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-    max-width: 420px; margin: 0 auto;
-  }
-  .etiqueta { position: static; }
-  .etiqueta span { display: block; text-align: center; font-size: 1rem; padding: 10px 8px; }
+  .alfajor__tilt { inset: 0 10% 28px 10%; }
+  .alfajor__sombra { bottom: 14px; left: 26%; right: 26%; height: 5%; }
+  /* en celular las etiquetas pasan a la cinta que corre debajo */
+  .etiquetas { display: none; }
 }
 @media (max-width: 380px) {
   .hero__botones .btn { min-height: 48px; padding: 0 12px; font-size: .92rem; }
@@ -589,3 +586,29 @@ a.flotante:hover .flotante__circulo { transform: scale(1.06); }
   margin-top: 12px; width: min(100%, 320px); aspect-ratio: 9 / 16; height: auto; object-fit: cover;
   border-radius: var(--radio); background: #000;
 }
+
+/* ---------- Cinta de ingredientes (solo celular) ---------- */
+.cinta {
+  display: none; position: relative; z-index: 2; overflow: hidden;
+  background: var(--noche); color: var(--blanco);
+  margin: 0 -8px; padding: 14px 0;
+  transform: rotate(-3deg);
+  box-shadow: 0 10px 24px rgba(6, 24, 40, .25);
+}
+.cinta__pista { display: flex; width: max-content; animation: cinta-corre 18s linear infinite; }
+.cinta__grupo { display: flex; align-items: center; flex-shrink: 0; }
+.cinta span {
+  font-family: var(--f-display); font-weight: 900; font-stretch: 75%; text-transform: uppercase;
+  font-size: 1.35rem; line-height: 1; white-space: nowrap; padding: 0 16px;
+}
+.cinta span:nth-of-type(4n+1) { color: var(--azul); }
+.cinta i {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--crema); flex-shrink: 0;
+}
+@keyframes cinta-corre { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .cinta__pista { animation: none; }
+  .cinta { overflow-x: auto; }
+}
+@media (max-width: 899px) { .cinta { display: block; } }
+@media (max-width: 899px) { .hero { padding-bottom: 40px; } }

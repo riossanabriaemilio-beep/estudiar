@@ -65,6 +65,10 @@
     hb.appendChild(el("a", { class: "btn btn--noche", href: I.botonPrincipal.href }, esc(I.botonPrincipal.texto)));
     hb.appendChild(el("a", { class: "btn btn--borde", href: I.botonSecundario.href }, esc(I.botonSecundario.texto)));
   });
+  si("cinta-pista", function (c) {
+    var grupo = I.etiquetas3d.map(function (t) { return "<span>" + esc(t) + "</span><i></i>"; }).join("");
+    c.innerHTML = '<div class="cinta__grupo">' + grupo + grupo + '</div><div class="cinta__grupo">' + grupo + grupo + "</div>";
+  });
   si("etiquetas", function (et) {
     I.etiquetas3d.forEach(function (t, i) {
       et.appendChild(el("li", { class: "etiqueta etiqueta--" + (i + 1) }, "<span>" + esc(t) + "</span>"));
