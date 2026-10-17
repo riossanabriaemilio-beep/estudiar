@@ -7,7 +7,7 @@ Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scro
 
 ## Versión 7 (actual)
 - **Aviso de cookies** abajo, con "Aceptar" y "Solo necesarias". La elección se guarda en el navegador y no vuelve a aparecer. Hoy la web no usa cookies de medición; si se agrega Google Analytics u otra, hay que cargarla solo si `window.SIGMA_COOKIES === "aceptadas"`. Falta el link a la política de privacidad (`cookies.politica` en config.js).
-- **Botón flotante abajo a la derecha** con el paquete del alfajor sobre un círculo verde tipo WhatsApp, en las dos páginas. Mientras `marca.whatsapp` sea `null` se ve pero no es link; cuando se cargue el número, abre WhatsApp con un mensaje armado. Sube solo para no tapar el aviso de cookies.
+- **Botón flotante abajo a la derecha** con el paquete del alfajor solo (sin círculo), en las dos páginas. Mientras `marca.whatsapp` sea `null` se ve pero no es link; cuando se cargue el número, abre WhatsApp con un mensaje armado. Sube solo para no tapar el aviso de cookies.
 
 ## Versión 6
 - **El inicio muestra los paquetes** de chocolate y blanco, que se van alternando solos cada ~4 segundos con un fundido y un giro suave. Siguen flotando y se inclinan con el mouse o el dedo. El botón Chocolate/Blanco elige uno a mano (y frena el cambio automático unos segundos). El cambio se pausa con el mouse o el foco encima, y con "reducir movimiento" no alterna solo.

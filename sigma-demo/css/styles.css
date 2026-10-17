@@ -512,16 +512,13 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: bottom .3s ease;
 }
 .flotante__circulo {
-  width: 68px; height: 68px; border-radius: 50%;
-  background: #25D366; border: 3px solid var(--blanco);
-  box-shadow: 0 10px 24px rgba(10, 30, 51, .3);
-  display: grid; place-items: center; overflow: visible;
+  width: 64px; display: block;
   animation: flotante-mece 3.2s ease-in-out infinite;
 }
 .flotante__circulo img {
-  width: 54px; height: auto; max-width: none;
-  transform: rotate(-12deg) translateY(-4px);
-  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .3));
+  width: 64px; height: auto; max-width: none; display: block;
+  transform: rotate(-10deg);
+  filter: drop-shadow(0 8px 10px rgba(10, 30, 51, .35));
 }
 .flotante__texto {
   background: var(--blanco); font-weight: 700; font-size: .9rem; padding: 8px 12px; border-radius: 999px;
