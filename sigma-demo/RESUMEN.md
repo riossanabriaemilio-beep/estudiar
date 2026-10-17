@@ -6,7 +6,7 @@ Una web de una sola página para reemplazar el Linktree de @sigmafood.ar, pensad
 Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scroll horizontal, links correctos, el formulario arma bien el mail, el scroll no se traba sobre el alfajor en celular, el foco con teclado es visible y axe-core no encontró problemas de accesibilidad (WCAG A/AA). Capturas en `capturas/`.
 
 ## Versión 5 (actual)
-- **Snack con la foto de estudio nueva**: recorté el paquete y los 8 trocitos por separado y los puse sobre azul noche (contrasta con el amarillo). Los trocitos flotan en loop, cada uno con su ritmo, y el paquete se mece suave. Con "reducir movimiento" quedan quietos. Del envase sale el peso: **50 g**.
+- **Snack con la foto de estudio nueva**: recorté el paquete y los 8 trocitos por separado sobre el amarillo de la foto de estudio. Los trocitos flotan en loop, cada uno con su ritmo, y el paquete se mece suave. Con "reducir movimiento" quedan quietos. Del envase sale el peso: **50 g**.
 - **Fotos mejoradas con IA**: caja, máquina, balanza, gimnasio y Farmacity pasaron por Real-ESRGAN (x4, gratis, corre en la compu) y quedaron en 1200 px de ancho. Bordes y texturas mucho más nítidos; las letras muy chicas (sellos) no se pueden recuperar.
 - Scripts en `tools/` (`mejorar-fotos.py`, `recortar-snack.py`).
 
