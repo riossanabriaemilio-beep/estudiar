@@ -5,7 +5,11 @@ Una web de una sola página para reemplazar el Linktree de @sigmafood.ar, pensad
 
 Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scroll horizontal, links correctos, el formulario arma bien el mail, el scroll no se traba sobre el alfajor en celular, el foco con teclado es visible y axe-core no encontró problemas de accesibilidad (WCAG A/AA). Capturas en `capturas/`.
 
-## Versión 7 (actual)
+## Versión 8 (actual)
+- **Inicio sin efectos de scroll**: antes el inicio quedaba "pegado" mientras se bajaba y el paquete se agrandaba con el scroll, lo que se veía como un error. Ahora el inicio se ve siempre igual (paquete + las 4 etiquetas) y el paquete solo cambia de chocolate a blanco **por tiempo**.
+- **Ícono de la pestaña**: el paquete de chocolate (`img/favicon-*.png`, `favicon.ico` y el ícono para iPhone), en lugar de la "S".
+
+## Versión 7
 - **Aviso de cookies** abajo, con "Aceptar" y "Solo necesarias". La elección se guarda en el navegador y no vuelve a aparecer. Hoy la web no usa cookies de medición; si se agrega Google Analytics u otra, hay que cargarla solo si `window.SIGMA_COOKIES === "aceptadas"`. Falta el link a la política de privacidad (`cookies.politica` en config.js).
 - **Botón flotante abajo a la derecha** con el paquete del alfajor solo (sin círculo), en las dos páginas. Mientras `marca.whatsapp` sea `null` se ve pero no es link; cuando se cargue el número, abre WhatsApp con un mensaje armado. Sube solo para no tapar el aviso de cookies.
 

@@ -2,7 +2,7 @@
   SIGMA — alfajor del inicio (fotos reales, sin 3D).
   - Flota suave y se inclina en perspectiva siguiendo el mouse o el dedo
     (en celular solo el arrastre horizontal: el scroll vertical sigue libre).
-  - Con el scroll, el alfajor se acerca y aparecen las 4 etiquetas; al seguir bajando, se van.
+  - Las 4 etiquetas se ven siempre; el scroll no cambia nada del inicio.
   - El botón Chocolate / Blanco cambia la foto con un fundido.
   - Con "reducir movimiento" queda quieto y las etiquetas se ven siempre.
 */
@@ -76,17 +76,8 @@
   stage.addEventListener("pointercancel", soltar);
   stage.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") soltar(); });
 
-  /* Progreso del scroll dentro del inicio */
-  var abierto = 0, objAbierto = 0;
-  function medirScroll() {
-    var r = hero.getBoundingClientRect();
-    var total = r.height - window.innerHeight;
-    var p = total > 0 ? clamp(-r.top / total, 0, 1) : 0;
-    objAbierto = smooth(0.1, 0.4, p) * (1 - smooth(0.7, 0.95, p));
-  }
-  window.addEventListener("scroll", medirScroll, { passive: true });
-  window.addEventListener("resize", medirScroll);
-  medirScroll();
+  /* El paquete entra una vez al cargar y queda fijo (el scroll no lo modifica) */
+  var abierto = 0, objAbierto = 1;
 
   /* Solo animamos cuando el inicio está en pantalla */
   var visible = true, corriendo = false, t0 = performance.now(), inicio = t0;
@@ -110,7 +101,6 @@
       "rotateX(" + (rx + 6).toFixed(2) + "deg) rotateY(" + (ry + balanceo + 25 * giroCambio).toFixed(2) + "deg) " +
       "rotateZ(" + giroZ.toFixed(2) + "deg) scale(" + escala.toFixed(3) + ")";
     stage.style.setProperty("--flota", (flota / 8).toFixed(3));
-    etiquetas.style.setProperty("--abierto", smooth(0.5, 0.95, abierto).toFixed(3));
     if (visible) requestAnimationFrame(cuadro); else corriendo = false;
   }
   stage.classList.add("listo");

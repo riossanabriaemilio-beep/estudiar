@@ -148,14 +148,12 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* 2. Inicio con alfajor 3D */
 .hero { background: var(--azul); position: relative; }
-.modo-anim .hero { height: 200svh; }
 .hero__escena {
   min-height: calc(100svh - var(--header-h));
   display: grid; grid-template-rows: auto 1fr; gap: 8px;
   padding: 24px var(--gutter) 16px;
   max-width: var(--max); margin: 0 auto;
 }
-.modo-anim .hero__escena { position: sticky; top: var(--header-h); height: calc(100svh - var(--header-h)); }
 .hero__titulo {
   font-family: var(--f-display); font-weight: 900; font-stretch: 70%;
   text-transform: uppercase; color: var(--blanco);
@@ -213,7 +211,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .etiqueta--2 { right: 0; top: 4%; }
 .etiqueta--3 { left: 0; bottom: 14%; }
 .etiqueta--4 { right: 0; bottom: 8%; }
-.modo-estatico .etiquetas { --abierto: 1; }
+.etiquetas { --abierto: 1; }
 
 @media (min-width: 900px) {
   .hero__escena { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; align-items: center; gap: 32px; padding-top: 0; padding-bottom: 0; }
@@ -222,7 +220,6 @@ ul { margin: 0; padding: 0; list-style: none; }
   .alfajor { height: min(78svh, 720px); }
 }
 @media (max-width: 899px) {
-  .modo-anim .hero { height: 170svh; }
   .hero__texto { text-align: left; }
 }
 @media (max-width: 380px) {
