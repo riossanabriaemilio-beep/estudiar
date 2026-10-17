@@ -108,7 +108,7 @@ const rIn = (y) => radioEn(y, R - T, HH - T);
 
 function perfil(r0, h) {
   const pts = [];
-  const N = 90;
+  const N = 260;
   for (let i = 0; i <= N; i++) {
     const th = -Math.PI / 2 + (i / N) * Math.PI;
     const c = Math.cos(th), s = Math.sin(th);
@@ -121,7 +121,7 @@ function perfil(r0, h) {
 }
 
 function geometriaCuerpo() {
-  const g = new THREE.LatheGeometry(perfil(R, HH), 180);
+  const g = new THREE.LatheGeometry(perfil(R, HH), 240);
   const pos = g.attributes.position;
   const v = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {
@@ -134,7 +134,13 @@ function geometriaCuerpo() {
     const k = 1 + n * 0.03 * smooth(0.5, 0.95, r);
     v.x *= k; v.z *= k;
     // ondas suaves del chocolate arriba
-    if (v.y > 0) v.y += (fbm(v.x * 2.2, v.z * 2.2 + 7, 3) - 0.5) * 0.03 * smooth(0.25, 0.4, v.y);
+    if (v.y > 0) v.y += (fbm(v.x * 2.2, v.z * 2.2 + 7, 3) - 0.5) * 0.02 * smooth(0.25, 0.4, v.y);
+    // líneas onduladas en relieve sobre la tapa, como en la foto del envase
+    if (v.y > 0.1) {
+      const fase = (v.z + 0.07 * Math.sin(v.x * 3.1 + 0.6) + 0.03 * Math.sin(v.x * 7.3)) / 0.27;
+      const banda = Math.pow(Math.max(0, Math.cos(fase * Math.PI * 2)), 2.2);
+      v.y += 0.02 * banda * smooth(0.12, 0.36, v.y);
+    }
     pos.setXYZ(i, v.x, v.y, v.z);
   }
   // UV planas (sin remolino en el centro de la tapa)
@@ -166,60 +172,9 @@ function franja(rFn, y0, y1, n = 60) {
   return der.concat(izq);
 }
 
-/* ---------- texturas del corte ---------- */
-function canvasTex(size, pintar, srgb = true) {
-  const c = document.createElement("canvas");
-  c.width = c.height = size;
-  pintar(c.getContext("2d"), size);
-  const t = new THREE.CanvasTexture(c);
-  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
-  // las UV del corte van de -1 a 1
-  t.repeat.set(0.5, 0.5); t.offset.set(0.5, 0.5);
-  return t;
-}
-function pintarGalleta(ctx, s, conColor) {
-  const img = ctx.createImageData(s, s);
-  for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
-    const n = fbm(x / s * 40, y / s * 40, 3) * 0.6 + fbm(x / s * 9, y / s * 9, 2) * 0.4;
-    const poro = vnoise(x / s * 90, y / s * 90) > 0.82 ? -26 : 0;
-    const i = (y * s + x) * 4;
-    const b = (n - 0.5) * 46 + poro;
-    if (conColor) { img.data[i] = 64 + b; img.data[i + 1] = 38 + b * 0.75; img.data[i + 2] = 27 + b * 0.55; }
-    else { img.data[i] = img.data[i + 1] = img.data[i + 2] = 128 + b * 2; }
-    img.data[i + 3] = 255;
-  }
-  ctx.putImageData(img, 0, 0);
-  // trocitos de maní
-  for (let k = 0; k < 34; k++) {
-    const x = hash(k, 11) * s, y = hash(k, 12) * s, r = (2.5 + hash(k, 13) * 4.5) * s / 512;
-    ctx.save(); ctx.translate(x, y); ctx.rotate(hash(k, 14) * 6);
-    ctx.fillStyle = conColor ? `rgb(${168 + hash(k, 15) * 30},${120 + hash(k, 16) * 25},${74 + hash(k, 17) * 20})` : "#ddd";
-    // trozo irregular (polígono), no un óvalo perfecto
-    ctx.beginPath();
-    for (let j = 0; j < 7; j++) {
-      const an = (j / 7) * Math.PI * 2, rr = r * (0.6 + hash(k * 7 + j, 18) * 0.7) * (j % 2 ? 1 : 1.4);
-      j ? ctx.lineTo(Math.cos(an) * rr, Math.sin(an) * rr) : ctx.moveTo(Math.cos(an) * rr, Math.sin(an) * rr);
-    }
-    ctx.closePath(); ctx.fill(); ctx.restore();
-  }
-}
-function pintarRelleno(ctx, s, conColor) {
-  const img = ctx.createImageData(s, s);
-  for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
-    // vetas horizontales: el relleno se "arrastra" al cortar
-    const n = fbm(x / s * 3, y / s * 30, 4);
-    const i = (y * s + x) * 4;
-    const b = (n - 0.5) * 34;
-    if (conColor) { img.data[i] = 98 + b; img.data[i + 1] = 56 + b * 0.8; img.data[i + 2] = 34 + b * 0.6; }
-    else { img.data[i] = img.data[i + 1] = img.data[i + 2] = 128 + b * 2; }
-    img.data[i + 3] = 255;
-  }
-  ctx.putImageData(img, 0, 0);
-}
-
 /* ---------- materiales ---------- */
 const SABORES = {
-  chocolate: { color: 0x3d1d0f, rough: 0.3, sheen: 0x6a3a22 },
+  chocolate: { color: 0x5a2710, rough: 0.26, sheen: 0x9a5530 },
   blanco: { color: 0xe9dcc2, rough: 0.42, sheen: 0xfff3dc },
 };
 
@@ -229,7 +184,7 @@ export function crearAlfajor() {
   // ondas del baño (relieve)
   const ondas = texturaPlana(512, [128, 128, 128], 200, (x, y) => {
     const n = fbm(x * 4, y * 4, 3);
-    return 0.55 * (0.5 + 0.5 * Math.sin(y * 34 + n * 7)) + 0.45 * fbm(x * 18, y * 18, 3);
+    return 0.35 * n + 0.65 * fbm(x * 22, y * 22, 3);
   });
   ondas.colorSpace = THREE.NoColorSpace;
 
@@ -241,9 +196,9 @@ export function crearAlfajor() {
     color: SABORES.chocolate.color,
     roughness: SABORES.chocolate.rough,
     bumpMap: ondas,
-    bumpScale: 0.8,
-    clearcoat: 0.35,
-    clearcoatRoughness: 0.3,
+    bumpScale: 0.35,
+    clearcoat: 0.6,
+    clearcoatRoughness: 0.18,
     sheen: 0.35,
     sheenColor: new THREE.Color(SABORES.chocolate.sheen),
     side: THREE.DoubleSide,
@@ -252,12 +207,22 @@ export function crearAlfajor() {
   const matPorcion = new THREE.MeshPhysicalMaterial({ ...opcBaño, clippingPlanes: [planoPorcion] });
   const matBañoCorte = new THREE.MeshStandardMaterial({ color: SABORES.chocolate.color, roughness: 0.55, side: THREE.DoubleSide });
 
-  const galletaMap = canvasTex(512, (c, s) => pintarGalleta(c, s, true));
-  const galletaBump = canvasTex(512, (c, s) => pintarGalleta(c, s, false), false);
-  const matGalleta = new THREE.MeshStandardMaterial({ map: galletaMap, bumpMap: galletaBump, bumpScale: 2.5, roughness: 0.92, side: THREE.DoubleSide });
-  const rellenoMap = canvasTex(512, (c, s) => pintarRelleno(c, s, true));
-  const rellenoBump = canvasTex(512, (c, s) => pintarRelleno(c, s, false), false);
-  const matRelleno = new THREE.MeshPhysicalMaterial({ map: rellenoMap, bumpMap: rellenoBump, bumpScale: 1.2, roughness: 0.38, clearcoat: 0.25, clearcoatRoughness: 0.5, side: THREE.DoubleSide });
+  // texturas sacadas de la foto del envase (ver tools/texturas.py en DECISIONES.md)
+  const cargador = new THREE.TextureLoader();
+  const cargar = (url, srgb, tam) => {
+    const t = cargador.load(url);
+    if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(1 / tam, 1 / tam);   // tam = cuántas unidades cubre una repetición
+    t.anisotropy = 4;
+    return t;
+  };
+  const galletaMap = cargar("img/tex/galleta.webp", true, 1.7);
+  const galletaBump = cargar("img/tex/galleta-alto.webp", false, 1.7);
+  const matGalleta = new THREE.MeshStandardMaterial({ color: 0xc4b6ae, map: galletaMap, bumpMap: galletaBump, bumpScale: 3, roughness: 0.9, side: THREE.DoubleSide });
+  const rellenoMap = cargar("img/tex/relleno.webp", true, 2.2);
+  const rellenoBump = cargar("img/tex/relleno-alto.webp", false, 2.2);
+  const matRelleno = new THREE.MeshPhysicalMaterial({ color: 0xd9c2b4, map: rellenoMap, bumpMap: rellenoBump, bumpScale: 0.8, roughness: 0.32, clearcoat: 0.5, clearcoatRoughness: 0.25, side: THREE.DoubleSide });
 
   // La cara del corte: baño (anillo), galletita, relleno, galletita
   function crearSeccion() {
@@ -267,14 +232,19 @@ export function crearAlfajor() {
     const forma = new THREE.Shape(franja(rOut, oa, ob, 120));
     forma.holes.push(new THREE.Path(franja(rIn, ia, ib, 120)));
     sec.add(new THREE.Mesh(new THREE.ShapeGeometry(forma, 1), matBañoCorte));
-    const capa = (y0, y1, mat) => {
-      const a = Math.max(y0, ia), b = Math.min(y1, ib);
-      if (b <= a) return;
-      sec.add(new THREE.Mesh(new THREE.ShapeGeometry(new THREE.Shape(franja(rIn, a, b, 50)), 1), mat));
-    };
-    capa(ia, -F_REL, matGalleta);
-    capa(-F_REL, F_REL, matRelleno);
-    capa(F_REL, ib, matGalleta);
+    // galletita: toda la zona interior
+    sec.add(new THREE.Mesh(new THREE.ShapeGeometry(new THREE.Shape(franja(rIn, ia, ib, 120)), 1), matGalleta));
+    // relleno adelante, con bordes ondulados como en la foto
+    const borde = (x, lado) => lado * F_REL + 0.016 * Math.sin(x * 5.3 + (lado > 0 ? 1.2 : 4)) + 0.008 * Math.sin(x * 13.7 + lado);
+    const wB = ancho(rIn, -F_REL) * 0.995, wT = ancho(rIn, F_REL) * 0.995;
+    const pts = [];
+    for (let i = 0; i <= 80; i++) { const x = -wB + (2 * wB * i) / 80; pts.push(new THREE.Vector2(x, borde(x, -1))); }
+    for (let i = 1; i < 20; i++) { const y = borde(wB, -1) + ((borde(wT, 1) - borde(wB, -1)) * i) / 20; pts.push(new THREE.Vector2(ancho(rIn, y) * 0.995, y)); }
+    for (let i = 0; i <= 80; i++) { const x = wT - (2 * wT * i) / 80; pts.push(new THREE.Vector2(x, borde(x, 1))); }
+    for (let i = 1; i < 20; i++) { const y = borde(-wT, 1) - ((borde(-wT, 1) - borde(-wB, -1)) * i) / 20; pts.push(new THREE.Vector2(-ancho(rIn, y) * 0.995, y)); }
+    const rel = new THREE.Mesh(new THREE.ShapeGeometry(new THREE.Shape(pts), 1), matRelleno);
+    rel.position.z = 0.0015;
+    sec.add(rel);
     return sec;
   }
 
@@ -359,7 +329,7 @@ export function crearEscena(contenedor, opciones = {}) {
   const escena = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
   escena.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
-  escena.environmentIntensity = 0.55;
+  escena.environmentIntensity = 0.45;
 
   const camara = new THREE.PerspectiveCamera(28, 1, 0.1, 50);
   camara.position.set(0, 2.2, 5.6);

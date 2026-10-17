@@ -64,6 +64,13 @@ Voseo, frases cortas, sin exageraciones ni promesas. Ejemplos: "Terminás la rut
 > - **Al hacer scroll**, la porción cortada se separa, gira y se apoya al costado mostrando su propio corte; el alfajor gira solo hasta mostrar el corte de frente. Al seguir bajando, se vuelve a cerrar entero (cerrado no se dibuja el corte, así no queda ninguna línea visible).
 > - Técnica: `clippingPlanes` de Three.js para cortar y `ShapeGeometry` para las caras del corte, con texturas generadas por código.
 >
+> **Versión 3 (texturas sacadas de las fotos):**
+> - Intenté generar el modelo 3D desde las fotos con Higgsfield (`generate_3d`), pero la cuenta tiene **0,85 créditos (plan gratis)**: no alcanza. No gasté nada.
+> - Saqué todo de la foto del envase (`assets-sigma/farmacity.png`), que es donde el alfajor se ve más grande:
+>   - **Galletita y relleno**: recorté parches de cada capa del corte de la mordida. Como miden 12–16 px de alto, estirados se veían borrosos. El script `img/tex/generar-texturas.py` usa esos parches como referencia: copia su **paleta exacta** (el color según la luminancia, píxel a píxel), su estructura, los poros oscuros de la miga y el **color real de los trocitos de maní** de la foto, y genera texturas nítidas de 512 px sin costuras (`img/tex/*.webp`, unos 350 KB en total).
+>   - **Baño**: las **líneas onduladas en relieve** de la tapa están modeladas en la geometría, con el espaciado y la ondulación de la foto, así que agarran brillo igual que en el envase. El color del chocolate está ajustado comparando el render con la foto.
+>   - **Relleno**: bordes ondulados (no una franja recta) y acabado brillante, como el caramelo de la foto.
+>
 > Lo de abajo describe la base técnica, que sigue igual.
 
 - **Quedó la Opción A** (modelo hecho con código en Three.js 0.160.0).

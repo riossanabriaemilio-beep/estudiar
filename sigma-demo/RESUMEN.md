@@ -10,6 +10,10 @@ Lo probé con Playwright en 375, 768 y 1440 px: sin errores en consola, sin scro
 - **Snack proteico sabor queso parmesano** sumado a Productos (amarillo del envase).
 - **Nueva página `collabs.html`** con los textos de la historia "Collabs", botón de DM y el video del creador (@doiverpichhh, a confirmar). Hay un lugar "Tu perfil acá" para sumar más creadores.
 
+## Versión 3
+- **Texturas sacadas de la foto del envase**: la galletita (miga con poros y trocitos de maní), el relleno caramelo brillante y las líneas onduladas del baño copian la foto de Farmacity. El script que las genera queda en `img/tex/generar-texturas.py`.
+- **Higgsfield**: no se pudo generar el modelo 3D desde la foto porque la cuenta tiene 0,85 créditos (plan gratis). No se gastó nada.
+
 ## Paleta
 | Color | Hex |
 |---|---|
