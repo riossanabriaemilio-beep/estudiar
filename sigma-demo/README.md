@@ -45,6 +45,7 @@ Todo está en **`js/config.js`**. Editás, guardás y recargás.
 - **Tabla nutricional** → `nutricion.filas`. Cada fila con `valor: null` no se muestra. Completá con lo que dice el envase, por ejemplo `{ nombre: "Valor energético", valor: "250 kcal" }`.
 - **Tiendas** → `tiendas` (nombre, texto, link y texto del botón). Podés agregar o sacar.
 - **WhatsApp de la marca** → `marca.whatsapp`, número sin "+" ni espacios (ej. `"5491112345678"`). Al completarlo aparece el botón de WhatsApp en Mayoristas y en el pie.
+- **Botón flotante y cookies** → `botonFlotante` y `cookies` (texto, botones y link a la política de privacidad).
 - **Tu firma** → `firma.texto` y `firma.whatsapp`.
 - **Fotos de Comunidad** → `comunidad.fotos` (de 3 a 6). Poné las fotos en `img/` en formato WebP.
 - **Preguntas frecuentes** → `faq`.

@@ -283,6 +283,51 @@
       (F.whatsapp ? ' · <a href="' + waLink(F.whatsapp, "Hola Emilio, vi la propuesta de Sigma.") + '" target="_blank" rel="noopener">WhatsApp</a>' : "");
   });
 
+  /* Botón flotante: el paquete del alfajor (será WhatsApp cuando haya número) */
+  (function () {
+    var B = C.botonFlotante;
+    if (!B) return;
+    var num = C.marca.whatsapp;
+    var cont = num
+      ? el("a", { class: "flotante", href: waLink(num, B.mensaje), target: "_blank", rel: "noopener", "aria-label": B.texto + " (se abre en otra pestaña)" })
+      : el("div", { class: "flotante flotante--sin-link", role: "img", "aria-label": "Alfajor Sigma" });
+    cont.innerHTML = '<span class="flotante__circulo"><img src="' + esc(B.imagen) + '" alt="" width="143" height="180"></span>' +
+      (num ? '<span class="flotante__texto">' + esc(B.texto) + "</span>" : "");
+    document.body.appendChild(cont);
+  })();
+
+  /* Aviso de cookies: se guarda la elección en el navegador */
+  (function () {
+    var K = C.cookies;
+    if (!K) return;
+    var CLAVE = "sigma-cookies";
+    var elegido = null;
+    try { elegido = localStorage.getItem(CLAVE); } catch (e) {}
+    window.SIGMA_COOKIES = elegido; // "aceptadas" | "necesarias" | null
+    if (elegido) return;
+    var aviso = el("div", { class: "cookies", role: "region", "aria-label": "Aviso de cookies" });
+    aviso.innerHTML = '<p class="cookies__texto">' + esc(K.texto) +
+      (K.politica ? ' <a href="' + esc(K.politica) + '" target="_blank" rel="noopener">Ver política de privacidad</a>' : "") + "</p>" +
+      '<div class="cookies__botones">' +
+        '<button type="button" class="btn btn--borde-claro btn--chico" data-cookies="necesarias">' + esc(K.rechazar) + "</button>" +
+        '<button type="button" class="btn btn--azul btn--chico" data-cookies="aceptadas">' + esc(K.aceptar) + "</button>" +
+      "</div>";
+    document.body.appendChild(aviso);
+    document.body.classList.add("con-cookies");
+    var medir = function () { document.body.style.setProperty("--alto-cookies", aviso.offsetHeight + "px"); };
+    medir(); window.addEventListener("resize", medir);
+    aviso.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-cookies]");
+      if (!b) return;
+      var v = b.getAttribute("data-cookies");
+      try { localStorage.setItem(CLAVE, v); } catch (err) {}
+      window.SIGMA_COOKIES = v;
+      document.dispatchEvent(new CustomEvent("sigma:cookies", { detail: v }));
+      aviso.remove();
+      document.body.classList.remove("con-cookies");
+    });
+  })();
+
   /* Entrada del texto del inicio (solo si GSAP cargó y no hay reduced-motion) */
   document.addEventListener("DOMContentLoaded", function () {
     if (!window.gsap || document.documentElement.classList.contains("sin-movimiento")) return;

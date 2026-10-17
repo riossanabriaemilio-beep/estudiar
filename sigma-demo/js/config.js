@@ -210,6 +210,23 @@ window.SIGMA_CONFIG = {
     ],
   },
 
+  // Botón flotante de abajo a la derecha (el paquete del alfajor).
+  // Usa marca.whatsapp: mientras sea null el botón se ve pero no lleva a ningún lado.
+  botonFlotante: {
+    imagen: "img/pack-chocolate-chico.webp",
+    texto: "Escribinos por WhatsApp",
+    mensaje: "Hola, Sigma. Vengo de la web y quiero consultar por el alfajor proteico.",
+  },
+
+  // Aviso de cookies. Hoy la web no usa cookies de medición ni publicidad;
+  // si se suma algo (ej. Google Analytics), cargarlo solo si la persona acepta (ver app.js: SIGMA_COOKIES).
+  cookies: {
+    texto: "Usamos cookies para que la web funcione bien y, si aceptás, para medir visitas y mejorarla.",
+    politica: null, // [PENDIENTE] link a la política de privacidad, si la marca tiene una
+    aceptar: "Aceptar",
+    rechazar: "Solo necesarias",
+  },
+
   firma: {
     texto: "Propuesta de diseño por Emilio",
     whatsapp: null, // [PENDIENTE] tu número, formato internacional sin "+". Ej: "5491112345678"

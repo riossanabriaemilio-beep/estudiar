@@ -501,3 +501,54 @@ ul { margin: 0; padding: 0; list-style: none; }
 .cl-cierre__in { display: grid; gap: 24px; justify-items: start; }
 .cl-cierre .titulo { color: var(--blanco); max-width: 16ch; text-wrap: balance; }
 @media (max-width: 599px) { .creador__hueco { aspect-ratio: auto; } }
+
+/* ---------- Botón flotante (paquete del alfajor / WhatsApp) ---------- */
+.flotante {
+  position: fixed; z-index: 60;
+  right: calc(16px + env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 10px; flex-direction: row-reverse;
+  text-decoration: none; color: var(--noche);
+  transition: bottom .3s ease;
+}
+.flotante__circulo {
+  width: 68px; height: 68px; border-radius: 50%;
+  background: #25D366; border: 3px solid var(--blanco);
+  box-shadow: 0 10px 24px rgba(10, 30, 51, .3);
+  display: grid; place-items: center; overflow: visible;
+  animation: flotante-mece 3.2s ease-in-out infinite;
+}
+.flotante__circulo img {
+  width: 54px; height: auto; max-width: none;
+  transform: rotate(-12deg) translateY(-4px);
+  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .3));
+}
+.flotante__texto {
+  background: var(--blanco); font-weight: 700; font-size: .9rem; padding: 8px 12px; border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(10, 30, 51, .2); white-space: nowrap;
+  opacity: 0; transform: translateX(8px); transition: opacity .2s, transform .2s; pointer-events: none;
+}
+a.flotante:hover .flotante__texto, a.flotante:focus-visible .flotante__texto { opacity: 1; transform: none; }
+a.flotante:hover .flotante__circulo { transform: scale(1.06); }
+@keyframes flotante-mece {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+/* con el aviso de cookies abierto, el botón sube para no taparlo */
+.con-cookies .flotante { bottom: calc(var(--alto-cookies, 150px) + 16px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- Aviso de cookies ---------- */
+.cookies {
+  position: fixed; z-index: 70; left: 0; right: 0; bottom: 0;
+  background: var(--noche); color: var(--crema);
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 24px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, .2);
+}
+.cookies__texto { font-size: .92rem; max-width: 60ch; }
+.cookies__texto a { color: var(--azul); }
+.cookies__botones { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn--borde-claro { border-color: var(--crema); color: var(--crema); background: transparent; }
+.btn--borde-claro:hover { background: rgba(244, 237, 220, .1); }
+.cookies :focus-visible { outline-color: var(--crema); }
+@media (prefers-reduced-motion: reduce) { .flotante__circulo { animation: none; } }
